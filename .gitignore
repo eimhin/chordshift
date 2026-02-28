@@ -1,0 +1,23 @@
+# Build outputs
+build/
+plugins/
+
+# macOS
+.DS_Store
+
+# IDE
+.cache/
+.vscode/
+.idea/
+*.xcodeproj/
+*.xcworkspace/
+compile_commands.json
+
+# Object files
+*.o
+*.dylib
+*.so
+*.dll
+
+docs/
+CLAUDE.md
