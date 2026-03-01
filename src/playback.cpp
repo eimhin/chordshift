@@ -29,17 +29,21 @@ static int calculateNextStep(MidiChordsAlgorithm* alg) {
     int stepCount = clamp(v[kParamStepCount], 1, NUM_STEPS);
     int playMode = v[kParamPlayMode];
 
+    // Clamp currentPlayStep to valid range in case stepCount was reduced
+    int current = dtc->currentPlayStep;
+    if (current >= stepCount) current = stepCount - 1;
+
     int nextStep = -1;
     int skipDir = 1;
 
     switch (playMode) {
         case PLAY_FORWARD:
-            nextStep = (dtc->currentPlayStep + 1) % stepCount;
+            nextStep = (current + 1) % stepCount;
             skipDir = 1;
             break;
 
         case PLAY_REVERSE:
-            nextStep = dtc->currentPlayStep - 1;
+            nextStep = current - 1;
             if (nextStep < 0) nextStep = stepCount - 1;
             skipDir = -1;
             break;
@@ -50,14 +54,14 @@ static int calculateNextStep(MidiChordsAlgorithm* alg) {
             } else {
                 if (dtc->pendulumDir == 0) {
                     // Forward
-                    nextStep = dtc->currentPlayStep + 1;
+                    nextStep = current + 1;
                     if (nextStep >= stepCount) {
                         nextStep = stepCount - 2;
                         dtc->pendulumDir = 1;
                     }
                 } else {
                     // Backward
-                    nextStep = dtc->currentPlayStep - 1;
+                    nextStep = current - 1;
                     if (nextStep < 0) {
                         nextStep = 1;
                         dtc->pendulumDir = 0;
@@ -96,8 +100,9 @@ void handleTransportStart(MidiChordsAlgorithm* alg) {
 
     dtc->currentPlayStep = 0;
     dtc->pendulumDir = 0;
-    dtc->clockCount = 0;
+    dtc->firstTick = true;
     dtc->stepTime = 0.0f;
+    dtc->stepDuration = 0.1f;
     dtc->transportState = transportTransition_Start(dtc->transportState);
 }
 
@@ -110,7 +115,7 @@ void handleTransportStop(MidiChordsAlgorithm* alg) {
     sendAllNotesOff(alg);
 
     dtc->currentPlayStep = 0;
-    dtc->clockCount = 0;
+    dtc->firstTick = false;
     dtc->stepTime = 0.0f;
 }
 
@@ -122,14 +127,13 @@ void processClockTick(MidiChordsAlgorithm* alg) {
     MidiChords_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
-    dtc->clockCount++;
-
     // Kill any currently playing notes before new step
     killAllPlayingNotes(alg);
 
     // Calculate next step
     int nextStep;
-    if (dtc->clockCount == 1) {
+    if (dtc->firstTick) {
+        dtc->firstTick = false;
         // First tick: find first enabled step from step 0
         nextStep = -1;
         int stepCount = clamp(v[kParamStepCount], 1, NUM_STEPS);

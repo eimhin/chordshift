@@ -91,6 +91,7 @@ bool deserialiseData(MidiChordsAlgorithm* alg, _NT_jsonParse& parse) {
             for (int s = 0; s < numSteps; s++) {
                 if (s < NUM_STEPS) {
                     if (!parseStepObject(parse, &alg->stepStates[s])) return false;
+                    alg->stepStates[s].lastRendered.count = 0;
                 } else {
                     // Skip excess steps
                     int numSkipMembers;

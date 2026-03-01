@@ -235,12 +235,12 @@ struct PlayingNote {
 
 // Delayed note for strum
 struct DelayedNote {
+    uint32_t where;
+    uint16_t gateMs;
+    uint16_t delayMs;
     uint8_t note;
     uint8_t velocity;
     uint8_t outCh;
-    uint16_t gateMs;
-    uint16_t delayMs;
-    uint32_t where;
     bool active;
 };
 
@@ -254,7 +254,7 @@ struct MidiChords_DTC {
     float msAccum;         // Fractional millisecond accumulator for timing
     uint8_t currentPlayStep;   // 0-based index of current playing step
     uint8_t pendulumDir;       // 0=forward, 1=backward
-    uint16_t clockCount;
+    bool firstTick;
 
     // Parameter change detection
     int16_t lastRecord;

@@ -148,12 +148,8 @@ static inline int midiNoteToDegree(uint8_t note, int root, int scaleType) {
     return octave * sd.length + bestDegree;
 }
 
-// Convert scale degree to MIDI note number.
-// Formula: oct = floor(d/scaleLen); deg = mod(d,scaleLen);
-//          semi = 12*oct + scale[deg]; midi = root + octaveBase*12 + semi
-static inline int degreeToMidi(int degree, int root, int octaveBase, int scaleType) {
-    ScaleData sd = getScaleData(scaleType);
-
+// Convert scale degree to MIDI note number using pre-fetched scale data.
+static inline int degreeToMidiSD(int degree, int root, int octaveBase, const ScaleData& sd) {
     int oct, deg;
     // Floor division and modulo for negative degrees
     if (degree >= 0) {
@@ -166,7 +162,10 @@ static inline int degreeToMidi(int degree, int root, int octaveBase, int scaleTy
     }
 
     int semi = 12 * oct + sd.intervals[deg];
-    int midi = root + octaveBase * 12 + semi;
+    return root + octaveBase * 12 + semi;
+}
 
-    return midi;
+// Convert scale degree to MIDI note number.
+static inline int degreeToMidi(int degree, int root, int octaveBase, int scaleType) {
+    return degreeToMidiSD(degree, root, octaveBase, getScaleData(scaleType));
 }

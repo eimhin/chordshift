@@ -63,8 +63,8 @@ void renderChord(RenderedChord* out, const DegreeBuffer* buf, const int16_t* v,
     StepParams sp = StepParams::fromAlgorithm(v, stepIdx);
 
     int root = v[kParamScaleRoot];
-    int scaleType = v[kParamScaleType];
     int octaveBase = v[kParamOctaveBase];
+    ScaleData sd = getScaleData(v[kParamScaleType]);
     int baseVelocity = v[kParamBaseVelocity];
     int velCurve = v[kParamVelCurve];
     int velDepth = v[kParamVelDepth];
@@ -89,7 +89,7 @@ void renderChord(RenderedChord* out, const DegreeBuffer* buf, const int16_t* v,
 
         for (int i = 0; i < buf->count && out->count < MAX_RENDER_NOTES; i++) {
             // Convert degree to MIDI
-            int midi = degreeToMidi(buf->degrees[i], root, octaveBase, scaleType);
+            int midi = degreeToMidiSD(buf->degrees[i], root, octaveBase, sd);
             midi = clamp(midi, 0, 127);
 
             // Calculate velocity

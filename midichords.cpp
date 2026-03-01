@@ -60,7 +60,7 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
     dtc->msAccum = 0.0f;
     dtc->currentPlayStep = 0;
     dtc->pendulumDir = 0;
-    dtc->clockCount = 0;
+    dtc->firstTick = false;
     dtc->lastRecord = 0;
     dtc->lastClearStep = 0;
     dtc->lastClearAll = 0;
@@ -242,7 +242,7 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     // Clock trigger processing
     if (clockRising && transportIsRunning(dtc->transportState)) {
         // Update step duration estimate (skip first tick — not a real inter-clock interval)
-        if (dtc->stepTime > 0.001f && dtc->clockCount > 0) {
+        if (dtc->stepTime > 0.001f && !dtc->firstTick) {
             dtc->stepDuration = dtc->stepTime;
         }
         dtc->stepTime = 0.0f;
