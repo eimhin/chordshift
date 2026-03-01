@@ -113,9 +113,17 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
 }
 
 void parameterChanged(_NT_algorithm* self, int p) {
-    (void)self;
-    (void)p;
-    // No caching needed currently — transforms are applied fresh each clock tick
+    MidiChordsAlgorithm* alg = (MidiChordsAlgorithm*)self;
+
+    if (p == kParamStepCount) {
+        int stepCount = clamp(alg->v[kParamStepCount], 1, NUM_STEPS);
+
+        alg->dynamicPages.numPages = NUM_GLOBAL_PAGES + stepCount;
+        NT_updateParameterPages(NT_algorithmIndex(self));
+
+        alg->paramDefs[kParamCurrentStep].max = (int16_t)stepCount;
+        NT_updateParameterDefinition(NT_algorithmIndex(self), kParamCurrentStep);
+    }
 }
 
 // ============================================================================
@@ -162,8 +170,8 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
         dtc->captureCount = 0;
         dtc->snapshotCount = 0;
         dtc->inputVel = 0;
-        memset(alg->captureNotes, 0, 128);
-        memset(alg->snapshotNotes, 0, 128);
+        memset(alg->captureNotes, 0, sizeof(alg->captureNotes));
+        memset(alg->snapshotNotes, 0, sizeof(alg->snapshotNotes));
         dtc->lastRecord = (int16_t)record;
     }
 
@@ -319,7 +327,7 @@ static const _NT_factory factory = {
 uintptr_t pluginEntry(_NT_selector selector, uint32_t data) {
     switch (selector) {
     case kNT_selector_version:
-        return kNT_apiVersion12;
+        return kNT_apiVersion13;
     case kNT_selector_numFactories:
         return 1;
     case kNT_selector_factoryInfo:

@@ -103,6 +103,7 @@ void handleTransportStart(MidiChordsAlgorithm* alg) {
     dtc->firstTick = true;
     dtc->stepTime = 0.0f;
     dtc->stepDuration = 0.1f;
+    dtc->msAccum = 0.0f;
     dtc->transportState = TRANSPORT_RUNNING;
 }
 

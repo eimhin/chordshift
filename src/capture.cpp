@@ -31,7 +31,7 @@ void captureNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity) {
 
     // Snapshot current held notes if this is a new peak
     if (dtc->captureCount >= dtc->snapshotCount) {
-        memcpy(alg->snapshotNotes, alg->captureNotes, 128);
+        memcpy(alg->snapshotNotes, alg->captureNotes, sizeof(alg->captureNotes));
         dtc->snapshotCount = dtc->captureCount;
     }
 }
@@ -113,5 +113,5 @@ void captureNoteOff(MidiChordsAlgorithm* alg, uint8_t note) {
 
     // Reset snapshot for next capture
     dtc->snapshotCount = 0;
-    memset(alg->snapshotNotes, 0, 128);
+    memset(alg->snapshotNotes, 0, sizeof(alg->snapshotNotes));
 }

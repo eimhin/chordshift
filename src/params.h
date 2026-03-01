@@ -167,6 +167,8 @@ static const GlobalPageInfo globalPages[] = {
 };
 
 static constexpr int NUM_GLOBAL_PAGES = 8;
+static_assert(sizeof(globalPages) / sizeof(globalPages[0]) == NUM_GLOBAL_PAGES,
+              "globalPages[] size must match NUM_GLOBAL_PAGES");
 
 static const char* const stepPageNames[] = {"Step 1", "Step 2", "Step 3", "Step 4",
                                             "Step 5", "Step 6", "Step 7", "Step 8"};
