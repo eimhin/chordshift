@@ -27,15 +27,11 @@ void captureNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity) {
     MidiChords_DTC* dtc = alg->dtc;
 
     // Track held notes (guard against two keys quantizing to same pitch)
-    if (dtc->captureNotes[note] == 0) {
-        dtc->captureNotes[note] = 1;
-        dtc->captureCount++;
-    }
-    dtc->inputVel = velocity;
+    trackHeldNote(alg, note, velocity);
 
     // Snapshot current held notes if this is a new peak
     if (dtc->captureCount >= dtc->snapshotCount) {
-        memcpy(dtc->snapshotNotes, dtc->captureNotes, 128);
+        memcpy(alg->snapshotNotes, alg->captureNotes, 128);
         dtc->snapshotCount = dtc->captureCount;
     }
 }
@@ -48,9 +44,7 @@ void captureNoteOff(MidiChordsAlgorithm* alg, uint8_t note) {
     MidiChords_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
-    if (dtc->captureNotes[note] == 0) return;
-    dtc->captureNotes[note] = 0;
-    if (dtc->captureCount > 0) dtc->captureCount--;
+    untrackHeldNote(alg, note);
 
     // Check if any notes still held
     if (dtc->captureCount > 0) return;
@@ -70,7 +64,7 @@ void captureNoteOff(MidiChordsAlgorithm* alg, uint8_t note) {
     int count = 0;
 
     for (int n = 0; n < 128 && count < MAX_CHORD_NOTES; n++) {
-        if (dtc->snapshotNotes[n]) {
+        if (alg->snapshotNotes[n]) {
             degrees[count++] = (int16_t)midiNoteToDegree((uint8_t)n, root, scaleType);
         }
     }
@@ -119,5 +113,5 @@ void captureNoteOff(MidiChordsAlgorithm* alg, uint8_t note) {
 
     // Reset snapshot for next capture
     dtc->snapshotCount = 0;
-    memset(dtc->snapshotNotes, 0, 128);
+    memset(alg->snapshotNotes, 0, 128);
 }

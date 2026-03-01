@@ -246,15 +246,10 @@ struct MidiChords_DTC {
     int16_t lastClearStep;
     int16_t lastClearAll;
 
-    // Capture state
-    uint8_t captureNotes[128];   // Currently held (remapped) MIDI notes
-    uint8_t snapshotNotes[128];  // Snapshot at peak chord size
+    // Capture state (lightweight counters only — buffers live in SRAM)
     uint8_t captureCount;
     uint8_t snapshotCount;
     uint8_t inputVel;
-
-    // White-key remap tracking (original -> remapped, for correct note-off)
-    uint8_t noteMap[128];
 };
 
 // UI layout constants
@@ -280,6 +275,11 @@ struct MidiChordsAlgorithm : public _NT_algorithm {
     PlayingNote playing[128];
     DelayedNote delayedNotes[MAX_DELAYED_NOTES];
 
+    // Capture buffers (moved from DTC — too large for tightly-coupled memory)
+    uint8_t captureNotes[128];   // Currently held (remapped) MIDI notes
+    uint8_t snapshotNotes[128];  // Snapshot at peak chord size
+    uint8_t noteMap[128];        // White-key remap tracking (original -> remapped)
+
     // Mutable copy of parameter definitions
     _NT_parameter paramDefs[MAX_TOTAL_PARAMS];
 
@@ -287,6 +287,9 @@ struct MidiChordsAlgorithm : public _NT_algorithm {
     uint8_t pageStepIndices[NUM_STEPS][PARAMS_PER_STEP];
     _NT_parameterPage pageDefs[MAX_PAGES];
     _NT_parameterPages dynamicPages;
+
+    // Active output note count (for early-exit optimization)
+    uint8_t activeNoteCount;
 
     // PRNG state
     uint32_t randState;

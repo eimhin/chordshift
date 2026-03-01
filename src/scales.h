@@ -36,23 +36,8 @@ enum ScaleType {
 // SCALE INTERVAL TABLES (0-based semitone offsets from root)
 // ============================================================================
 
-static const int scaleIntervals[][7] = {
-    { 0, 2, 4, 5, 7, 9, 11 },  // Ionian (Major)
-    { 0, 2, 3, 5, 7, 9, 10 },  // Dorian
-    { 0, 1, 3, 5, 7, 8, 10 },  // Phrygian
-    { 0, 2, 4, 6, 7, 9, 11 },  // Lydian
-    { 0, 2, 4, 5, 7, 9, 10 },  // Mixolydian
-    { 0, 2, 3, 5, 7, 8, 10 },  // Aeolian (Natural Minor)
-    { 0, 1, 3, 5, 6, 8, 10 },  // Locrian
-    { 0, 2, 3, 5, 7, 8, 11 },  // Harmonic Minor
-    { 0, 2, 3, 5, 7, 9, 11 },  // Melodic Minor
-    { 0, 2, 4, 7, 9, 0, 0 },   // Major Pentatonic (5 notes)
-    { 0, 3, 5, 7, 10, 0, 0 },  // Minor Pentatonic (5 notes)
-};
-
-static const int scaleSizes[] = {
-    7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5
-};
+extern const int scaleIntervals[SCALE_COUNT][7];
+extern const int scaleSizes[SCALE_COUNT];
 
 // ============================================================================
 // SCALE DATA ACCESS
@@ -65,7 +50,7 @@ struct ScaleData {
 
 static inline ScaleData getScaleData(int scaleType) {
     ScaleData sd;
-    if (scaleType < 0 || scaleType >= (int)(sizeof(scaleSizes) / sizeof(scaleSizes[0]))) {
+    if (scaleType < 0 || scaleType >= SCALE_COUNT) {
         scaleType = 0;  // Default to Ionian
     }
     sd.intervals = scaleIntervals[scaleType];
@@ -79,9 +64,7 @@ static inline ScaleData getScaleData(int scaleType) {
 
 // Maps pitch class (0-11) to white key index (0-6)
 // C=0, C#->0, D=1, D#->1, E=2, F=3, F#->3, G=4, G#->4, A=5, A#->5, B=6
-static const int PC_TO_WHITE_KEY[12] = {
-    0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6
-};
+extern const int PC_TO_WHITE_KEY[12];
 
 // Quantize a MIDI note to the given root + scale via white-key mapping.
 // White key C always gives root, D gives degree 1, etc.

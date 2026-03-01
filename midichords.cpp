@@ -49,9 +49,6 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
 
     // Initialize DTC (memset zeros all fields; only set non-zero values after)
     memset(dtc, 0, sizeof(MidiChords_DTC));
-    for (int i = 0; i < 128; i++) {
-        dtc->noteMap[i] = (uint8_t)i;
-    }
     dtc->stepDuration = 0.1f;
 
     // Initialize step states in DRAM
@@ -63,15 +60,21 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
     // Construct algorithm in SRAM
     MidiChordsAlgorithm* pThis = new (ptrs.sram) MidiChordsAlgorithm(dtc, stepStates);
 
-    // Initialize playing notes
+    // Initialize playing notes and capture buffers
     for (int i = 0; i < 128; i++) {
         pThis->playing[i].active = false;
+        pThis->captureNotes[i] = 0;
+        pThis->snapshotNotes[i] = 0;
+        pThis->noteMap[i] = (uint8_t)i;
     }
 
     // Initialize delayed notes
     for (int i = 0; i < MAX_DELAYED_NOTES; i++) {
         pThis->delayedNotes[i].active = false;
     }
+
+    // Initialize active note count
+    pThis->activeNoteCount = 0;
 
     // Seed PRNG
     pThis->randState = NT_getCpuCycleCount();
@@ -159,8 +162,8 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
         dtc->captureCount = 0;
         dtc->snapshotCount = 0;
         dtc->inputVel = 0;
-        memset(dtc->captureNotes, 0, 128);
-        memset(dtc->snapshotNotes, 0, 128);
+        memset(alg->captureNotes, 0, 128);
+        memset(alg->snapshotNotes, 0, 128);
         dtc->lastRecord = (int16_t)record;
     }
 
@@ -238,10 +241,10 @@ void midiMessage(_NT_algorithm* self, uint8_t byte0, uint8_t byte1, uint8_t byte
     // Scale quantization (white-key remap)
     if (isNoteOn) {
         uint8_t quantized = quantizeToScale(byte1, v[kParamScaleRoot], v[kParamScaleType]);
-        dtc->noteMap[byte1] = quantized;
+        alg->noteMap[byte1] = quantized;
         byte1 = quantized;
     } else if (isNoteOff) {
-        byte1 = dtc->noteMap[byte1];
+        byte1 = alg->noteMap[byte1];
     }
 
     // Pass-through: send remapped note to output so user hears scale notes
@@ -259,16 +262,9 @@ void midiMessage(_NT_algorithm* self, uint8_t byte0, uint8_t byte1, uint8_t byte
     } else {
         // Not recording — track held notes for velocity display
         if (isNoteOn) {
-            if (dtc->captureNotes[byte1] == 0) {
-                dtc->captureNotes[byte1] = 1;
-                dtc->captureCount++;
-            }
-            dtc->inputVel = byte2;
+            trackHeldNote(alg, byte1, byte2);
         } else if (isNoteOff) {
-            if (dtc->captureNotes[byte1]) {
-                dtc->captureNotes[byte1] = 0;
-                if (dtc->captureCount > 0) dtc->captureCount--;
-            }
+            untrackHeldNote(alg, byte1);
             if (dtc->captureCount == 0) dtc->inputVel = 0;
         }
     }

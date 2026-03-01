@@ -8,7 +8,8 @@ SOURCES = midichords.cpp \
           src/playback.cpp \
           src/midi.cpp \
           src/ui.cpp \
-          src/serial.cpp
+          src/serial.cpp \
+          src/scales.cpp
 
 CXX = arm-none-eabi-g++
 CFLAGS = -std=c++11 \
@@ -21,6 +22,7 @@ CFLAGS = -std=c++11 \
          -fPIC \
          -fno-rtti \
          -fno-exceptions
+DEPFLAGS = -MMD -MP
 INCLUDES = -I. -I./src -I./distingNT_API/include
 LDFLAGS = -Wl,--relocatable -nostdlib
 OUTPUT_DIR = plugins
@@ -38,7 +40,7 @@ $(OUTPUT): $(OBJECTS)
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+	$(CXX) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
 
 hardware: all
 
@@ -68,5 +70,7 @@ compile_commands.json: $(SOURCES) Makefile
 clean:
 	rm -rf $(BUILD_DIR) $(OUTPUT_DIR)
 	@echo "Cleaned build and output directories"
+
+-include $(OBJECTS:.o=.d)
 
 .PHONY: all hardware push check size clean compile_commands.json

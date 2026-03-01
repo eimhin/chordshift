@@ -43,4 +43,6 @@ static constexpr int MAX_PAGES = 8 + NUM_STEPS; // 8 global pages + step pages
 
 static_assert(MAX_TOTAL_PARAMS <= 242, "Max parameter index exceeds distingNT API limit of 242");
 static_assert(MAX_CHORD_NOTES <= 127, "MAX_CHORD_NOTES must fit in int8_t array");
-static_assert(NUM_STEPS <= 8, "NUM_STEPS must be <= 8");
+static_assert(NUM_STEPS == 8, "Changing NUM_STEPS requires updating: "
+    "STEP_PARAMS repetitions in params.h, stepPageNames[] in params.h, "
+    "and Edit Step max value in params.h");

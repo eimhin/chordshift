@@ -51,7 +51,7 @@ static const char* const stepNumStrings[] = {"1", "2", "3", "4", "5", "6", "7", 
 // PARAMETER DEFINITIONS
 // ============================================================================
 
-static const _NT_parameter parameters[] = {
+static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     // Routing parameters (0-1)
     NT_PARAMETER_CV_INPUT("Run", 0, 1)
     NT_PARAMETER_CV_INPUT("Clock", 0, 2)

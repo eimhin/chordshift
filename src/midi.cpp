@@ -20,6 +20,8 @@ static void sendNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity,
     PlayingNote* existing = &alg->playing[note];
     if (existing->active) {
         NT_sendMidi3ByteMessage(existing->where, withChannel(kMidiNoteOff, existing->outCh), note, 0);
+    } else {
+        alg->activeNoteCount++;
     }
 
     NT_sendMidi3ByteMessage(where, withChannel(kMidiNoteOn, outCh), note, velocity);
@@ -77,12 +79,15 @@ void sendAllNotesOff(MidiChordsAlgorithm* alg) {
 }
 
 void killAllPlayingNotes(MidiChordsAlgorithm* alg) {
-    for (int n = 0; n < 128; n++) {
-        PlayingNote* pn = &alg->playing[n];
-        if (pn->active) {
-            NT_sendMidi3ByteMessage(pn->where, withChannel(kMidiNoteOff, pn->outCh), (uint8_t)n, 0);
-            pn->active = false;
+    if (alg->activeNoteCount > 0) {
+        for (int n = 0; n < 128; n++) {
+            PlayingNote* pn = &alg->playing[n];
+            if (pn->active) {
+                NT_sendMidi3ByteMessage(pn->where, withChannel(kMidiNoteOff, pn->outCh), (uint8_t)n, 0);
+                pn->active = false;
+            }
         }
+        alg->activeNoteCount = 0;
     }
 
     // Cancel pending delayed notes
@@ -117,7 +122,7 @@ void processDelayedNotes(MidiChordsAlgorithm* alg, int elapsedMs) {
 // ============================================================================
 
 void processNoteDurations(MidiChordsAlgorithm* alg, int elapsedMs) {
-    if (elapsedMs <= 0) return;
+    if (elapsedMs <= 0 || alg->activeNoteCount == 0) return;
 
     for (int n = 0; n < 128; n++) {
         PlayingNote* pn = &alg->playing[n];
@@ -126,6 +131,7 @@ void processNoteDurations(MidiChordsAlgorithm* alg, int elapsedMs) {
         if (pn->remainingMs <= (uint16_t)elapsedMs) {
             NT_sendMidi3ByteMessage(pn->where, withChannel(kMidiNoteOff, pn->outCh), (uint8_t)n, 0);
             pn->active = false;
+            if (alg->activeNoteCount > 0) alg->activeNoteCount--;
         } else {
             pn->remainingMs -= (uint16_t)elapsedMs;
         }
