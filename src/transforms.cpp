@@ -174,11 +174,7 @@ static void applyDirection(DegreeBuffer* buf, int dir, uint32_t& randState) {
             break;
 
         case DIR_BACKWARD:
-            for (int i = 0; i < n / 2; i++) {
-                int16_t tmp = buf->degrees[i];
-                buf->degrees[i] = buf->degrees[n - 1 - i];
-                buf->degrees[n - 1 - i] = tmp;
-            }
+            applyReverse(buf);
             break;
 
         case DIR_PINGPONG:

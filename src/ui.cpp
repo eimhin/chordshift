@@ -89,7 +89,7 @@ static void drawChordVisualization(MidiChordsAlgorithm* alg) {
     MidiChords_DTC* dtc = alg->dtc;
     // Show the most recently rendered chord
     int playStep = dtc->currentPlayStep;
-    if (playStep < 0 || playStep >= NUM_STEPS) return;
+    if (playStep >= NUM_STEPS) return;
 
     StepState* ss = &alg->stepStates[playStep];
     RenderedChord* rc = &ss->lastRendered;

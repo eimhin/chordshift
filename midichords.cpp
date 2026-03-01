@@ -34,7 +34,7 @@
 
 void calculateRequirements(_NT_algorithmRequirements& req, const int32_t* specs) {
     (void)specs;
-    req.numParameters = calcTotalParams();
+    req.numParameters = MAX_TOTAL_PARAMS;
     req.sram = sizeof(MidiChordsAlgorithm);
     req.dram = sizeof(StepState) * NUM_STEPS;
     req.dtc = sizeof(MidiChords_DTC);
@@ -47,26 +47,12 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
     MidiChords_DTC* dtc = (MidiChords_DTC*)ptrs.dtc;
     StepState* stepStates = (StepState*)ptrs.dram;
 
-    // Initialize DTC
+    // Initialize DTC (memset zeros all fields; only set non-zero values after)
     memset(dtc, 0, sizeof(MidiChords_DTC));
     for (int i = 0; i < 128; i++) {
         dtc->noteMap[i] = (uint8_t)i;
     }
-    dtc->transportState = TRANSPORT_STOPPED;
-    dtc->prevGateHigh = false;
-    dtc->prevClockHigh = false;
-    dtc->stepTime = 0.0f;
     dtc->stepDuration = 0.1f;
-    dtc->msAccum = 0.0f;
-    dtc->currentPlayStep = 0;
-    dtc->pendulumDir = 0;
-    dtc->firstTick = false;
-    dtc->lastRecord = 0;
-    dtc->lastClearStep = 0;
-    dtc->lastClearAll = 0;
-    dtc->captureCount = 0;
-    dtc->snapshotCount = 0;
-    dtc->inputVel = 0;
 
     // Initialize step states in DRAM
     for (int s = 0; s < NUM_STEPS; s++) {
@@ -90,56 +76,29 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
     // Seed PRNG
     pThis->randState = NT_getCpuCycleCount();
 
-    // Build parameter pages
-    // Page 0: Routing
-    pThis->pageDefs[0] = {
-        .name = "Routing", .numParams = sizeof(pageRouting) / sizeof(pageRouting[0]),
-        .group = 0, .unused = {0, 0}, .params = pageRouting};
-    // Page 1: Scale
-    pThis->pageDefs[1] = {
-        .name = "Scale", .numParams = sizeof(pageScale) / sizeof(pageScale[0]),
-        .group = 1, .unused = {0, 0}, .params = pageScale};
-    // Page 2: Record
-    pThis->pageDefs[2] = {
-        .name = "Record", .numParams = sizeof(pageRecord) / sizeof(pageRecord[0]),
-        .group = 2, .unused = {0, 0}, .params = pageRecord};
-    // Page 3: Output
-    pThis->pageDefs[3] = {
-        .name = "Output", .numParams = sizeof(pageOutput) / sizeof(pageOutput[0]),
-        .group = 3, .unused = {0, 0}, .params = pageOutput};
-    // Page 4: Pitch
-    pThis->pageDefs[4] = {
-        .name = "Pitch", .numParams = sizeof(pagePitch) / sizeof(pagePitch[0]),
-        .group = 4, .unused = {0, 0}, .params = pagePitch};
-    // Page 5: Voicing
-    pThis->pageDefs[5] = {
-        .name = "Voicing", .numParams = sizeof(pageVoicing) / sizeof(pageVoicing[0]),
-        .group = 5, .unused = {0, 0}, .params = pageVoicing};
-    // Page 6: Order
-    pThis->pageDefs[6] = {
-        .name = "Order", .numParams = sizeof(pageOrder) / sizeof(pageOrder[0]),
-        .group = 6, .unused = {0, 0}, .params = pageOrder};
-    // Page 7: Articulate
-    pThis->pageDefs[7] = {
-        .name = "Articulate", .numParams = sizeof(pageArticulate) / sizeof(pageArticulate[0]),
-        .group = 7, .unused = {0, 0}, .params = pageArticulate};
+    // Build parameter pages: global pages from table
+    for (int i = 0; i < NUM_GLOBAL_PAGES; i++) {
+        pThis->pageDefs[i] = {
+            .name = globalPages[i].name, .numParams = globalPages[i].numParams,
+            .group = (uint8_t)i, .unused = {0, 0}, .params = globalPages[i].params};
+    }
 
-    // Step pages (8 to 15)
+    // Step pages
     for (int s = 0; s < NUM_STEPS; s++) {
         buildStepPageIndices(pThis->pageStepIndices[s], s);
-        pThis->pageDefs[8 + s] = {
+        pThis->pageDefs[NUM_GLOBAL_PAGES + s] = {
             .name = stepPageNames[s],
             .numParams = PARAMS_PER_STEP,
-            .group = 8,
+            .group = (uint8_t)NUM_GLOBAL_PAGES,
             .unused = {0, 0},
             .params = pThis->pageStepIndices[s]};
     }
 
-    pThis->dynamicPages.numPages = 8 + NUM_STEPS;
+    pThis->dynamicPages.numPages = NUM_GLOBAL_PAGES + NUM_STEPS;
     pThis->dynamicPages.pages = pThis->pageDefs;
 
     // Copy parameter definitions into mutable array
-    memcpy(pThis->paramDefs, parameters, sizeof(_NT_parameter) * calcTotalParams());
+    memcpy(pThis->paramDefs, parameters, sizeof(_NT_parameter) * MAX_TOTAL_PARAMS);
 
     // Set up parameters and pages
     pThis->parameters = pThis->paramDefs;
@@ -200,10 +159,8 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
         dtc->captureCount = 0;
         dtc->snapshotCount = 0;
         dtc->inputVel = 0;
-        for (int i = 0; i < 128; i++) {
-            dtc->captureNotes[i] = 0;
-            dtc->snapshotNotes[i] = 0;
-        }
+        memset(dtc->captureNotes, 0, 128);
+        memset(dtc->snapshotNotes, 0, 128);
         dtc->lastRecord = (int16_t)record;
     }
 

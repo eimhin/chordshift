@@ -8,6 +8,7 @@
 #include <distingnt/api.h>
 #include <cstdint>
 #include "config.h"
+#include "math.h"
 
 // ============================================================================
 // MIDI CONSTANTS
@@ -28,16 +29,6 @@ enum TransportState {
 
 static inline bool transportIsRunning(TransportState state) {
     return state != TRANSPORT_STOPPED;
-}
-
-static inline TransportState transportTransition_Start(TransportState current) {
-    (void)current;
-    return TRANSPORT_RUNNING;
-}
-
-static inline TransportState transportTransition_Stop(TransportState current) {
-    (void)current;
-    return TRANSPORT_STOPPED;
 }
 
 // ============================================================================
@@ -155,12 +146,6 @@ static inline int stepParam(int step, int param) {
 // STEP PARAMETERS ACCESSOR
 // ============================================================================
 
-static inline int clampParam(int val, int minVal, int maxVal) {
-    if (val < minVal) return minVal;
-    if (val > maxVal) return maxVal;
-    return val;
-}
-
 struct StepParams {
     const int16_t* v;
     int step;
@@ -184,10 +169,10 @@ struct StepParams {
     bool reverse() const { return raw(kStepReverse) == 1; }
     int strumTime() const { return raw(kStepStrumTime); }
     int velocity() const { return raw(kStepVelocity); }
-    int gateLength() const { return clampParam(raw(kStepGateLength), 1, 200); }
-    int probability() const { return clampParam(raw(kStepProbability), 0, 100); }
+    int gateLength() const { return clamp(raw(kStepGateLength), 1, 200); }
+    int probability() const { return clamp(raw(kStepProbability), 0, 100); }
     int reflect() const { return raw(kStepReflect); }
-    int repeat() const { return clampParam(raw(kStepRepeat), 1, 4); }
+    int repeat() const { return clamp(raw(kStepRepeat), 1, 4); }
 };
 
 // ============================================================================

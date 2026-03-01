@@ -149,17 +149,31 @@ static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParam
 // DYNAMIC PAGE BUILDING
 // ============================================================================
 
+struct GlobalPageInfo {
+    const char* name;
+    const uint8_t* params;
+    uint8_t numParams;
+};
+
+static const GlobalPageInfo globalPages[] = {
+    {"Routing",    pageRouting,    sizeof(pageRouting) / sizeof(pageRouting[0])},
+    {"Scale",      pageScale,      sizeof(pageScale) / sizeof(pageScale[0])},
+    {"Record",     pageRecord,     sizeof(pageRecord) / sizeof(pageRecord[0])},
+    {"Output",     pageOutput,     sizeof(pageOutput) / sizeof(pageOutput[0])},
+    {"Pitch",      pagePitch,      sizeof(pagePitch) / sizeof(pagePitch[0])},
+    {"Voicing",    pageVoicing,    sizeof(pageVoicing) / sizeof(pageVoicing[0])},
+    {"Order",      pageOrder,      sizeof(pageOrder) / sizeof(pageOrder[0])},
+    {"Articulate", pageArticulate, sizeof(pageArticulate) / sizeof(pageArticulate[0])},
+};
+
+static constexpr int NUM_GLOBAL_PAGES = 8;
+
 static const char* const stepPageNames[] = {"Step 1", "Step 2", "Step 3", "Step 4",
                                             "Step 5", "Step 6", "Step 7", "Step 8"};
 
-static inline int buildStepPageIndices(uint8_t* indices, int step) {
+static inline void buildStepPageIndices(uint8_t* indices, int step) {
     int base = kGlobalParamCount + (step * PARAMS_PER_STEP);
     for (int i = 0; i < PARAMS_PER_STEP; i++) {
         indices[i] = (uint8_t)(base + i);
     }
-    return PARAMS_PER_STEP;
-}
-
-static inline int calcTotalParams() {
-    return GLOBAL_PARAMS + (PARAMS_PER_STEP * NUM_STEPS);
 }

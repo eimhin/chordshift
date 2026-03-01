@@ -17,6 +17,7 @@
 #include "capture.h"
 #include "math.h"
 #include "scales.h"
+#include <cstring>
 
 // ============================================================================
 // CAPTURE NOTE ON
@@ -34,9 +35,7 @@ void captureNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity) {
 
     // Snapshot current held notes if this is a new peak
     if (dtc->captureCount >= dtc->snapshotCount) {
-        for (int i = 0; i < 128; i++) {
-            dtc->snapshotNotes[i] = dtc->captureNotes[i];
-        }
+        memcpy(dtc->snapshotNotes, dtc->captureNotes, 128);
         dtc->snapshotCount = dtc->captureCount;
     }
 }
@@ -120,7 +119,5 @@ void captureNoteOff(MidiChordsAlgorithm* alg, uint8_t note) {
 
     // Reset snapshot for next capture
     dtc->snapshotCount = 0;
-    for (int i = 0; i < 128; i++) {
-        dtc->snapshotNotes[i] = 0;
-    }
+    memset(dtc->snapshotNotes, 0, 128);
 }

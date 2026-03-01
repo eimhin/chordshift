@@ -103,13 +103,13 @@ void handleTransportStart(MidiChordsAlgorithm* alg) {
     dtc->firstTick = true;
     dtc->stepTime = 0.0f;
     dtc->stepDuration = 0.1f;
-    dtc->transportState = transportTransition_Start(dtc->transportState);
+    dtc->transportState = TRANSPORT_RUNNING;
 }
 
 void handleTransportStop(MidiChordsAlgorithm* alg) {
     MidiChords_DTC* dtc = alg->dtc;
 
-    dtc->transportState = transportTransition_Stop(dtc->transportState);
+    dtc->transportState = TRANSPORT_STOPPED;
 
     killAllPlayingNotes(alg);
     sendAllNotesOff(alg);
