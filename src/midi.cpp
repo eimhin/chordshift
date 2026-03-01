@@ -95,20 +95,19 @@ void killAllPlayingNotes(MidiChordsAlgorithm* alg) {
 // DELAYED NOTE PROCESSING (Strum)
 // ============================================================================
 
-void processDelayedNotes(MidiChordsAlgorithm* alg, float dt) {
-    int decrementMs = (int)(dt * 1000.0f);
-    if (decrementMs < 1) decrementMs = 1;
+void processDelayedNotes(MidiChordsAlgorithm* alg, int elapsedMs) {
+    if (elapsedMs <= 0) return;
 
     for (int i = 0; i < MAX_DELAYED_NOTES; i++) {
         DelayedNote* dn = &alg->delayedNotes[i];
         if (!dn->active) continue;
 
-        if (dn->delayMs <= (uint16_t)decrementMs) {
+        if (dn->delayMs <= (uint16_t)elapsedMs) {
             // Time to send
             sendNoteOn(alg, dn->note, dn->velocity, dn->gateMs, dn->outCh, dn->where);
             dn->active = false;
         } else {
-            dn->delayMs -= (uint16_t)decrementMs;
+            dn->delayMs -= (uint16_t)elapsedMs;
         }
     }
 }
@@ -117,19 +116,18 @@ void processDelayedNotes(MidiChordsAlgorithm* alg, float dt) {
 // NOTE DURATION PROCESSING
 // ============================================================================
 
-void processNoteDurations(MidiChordsAlgorithm* alg, float dt) {
-    int decrementMs = (int)(dt * 1000.0f);
-    if (decrementMs < 1) decrementMs = 1;
+void processNoteDurations(MidiChordsAlgorithm* alg, int elapsedMs) {
+    if (elapsedMs <= 0) return;
 
     for (int n = 0; n < 128; n++) {
         PlayingNote* pn = &alg->playing[n];
         if (!pn->active) continue;
 
-        if (pn->remainingMs <= (uint16_t)decrementMs) {
+        if (pn->remainingMs <= (uint16_t)elapsedMs) {
             NT_sendMidi3ByteMessage(pn->where, withChannel(kMidiNoteOff, pn->outCh), (uint8_t)n, 0);
             pn->active = false;
         } else {
-            pn->remainingMs -= (uint16_t)decrementMs;
+            pn->remainingMs -= (uint16_t)elapsedMs;
         }
     }
 }

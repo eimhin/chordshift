@@ -30,15 +30,18 @@ static int calculateNextStep(MidiChordsAlgorithm* alg) {
     int playMode = v[kParamPlayMode];
 
     int nextStep = -1;
+    int skipDir = 1;
 
     switch (playMode) {
         case PLAY_FORWARD:
             nextStep = (dtc->currentPlayStep + 1) % stepCount;
+            skipDir = 1;
             break;
 
         case PLAY_REVERSE:
             nextStep = dtc->currentPlayStep - 1;
             if (nextStep < 0) nextStep = stepCount - 1;
+            skipDir = -1;
             break;
 
         case PLAY_PENDULUM:
@@ -60,24 +63,25 @@ static int calculateNextStep(MidiChordsAlgorithm* alg) {
                         dtc->pendulumDir = 0;
                     }
                 }
+                skipDir = (dtc->pendulumDir == 0) ? 1 : -1;
             }
             break;
 
         case PLAY_RANDOM:
             nextStep = randRange(alg->randState, 0, stepCount - 1);
+            skipDir = 1;
             break;
     }
 
     if (nextStep < 0) nextStep = 0;
 
-    // Skip disabled steps (try up to stepCount times to find an enabled step)
+    // Skip disabled steps in the current play direction
     for (int attempt = 0; attempt < stepCount; attempt++) {
         StepParams sp = StepParams::fromAlgorithm(v, nextStep);
         if (sp.enabled()) {
             return nextStep;
         }
-        // Advance to next step in forward direction to find an enabled one
-        nextStep = (nextStep + 1) % stepCount;
+        nextStep = (nextStep + skipDir + stepCount) % stepCount;
     }
 
     return -1;  // No enabled steps
@@ -126,14 +130,15 @@ void processClockTick(MidiChordsAlgorithm* alg) {
     // Calculate next step
     int nextStep;
     if (dtc->clockCount == 1) {
-        // First tick: start from step 0 (or first enabled step)
-        nextStep = 0;
+        // First tick: find first enabled step from step 0
+        nextStep = -1;
         int stepCount = clamp(v[kParamStepCount], 1, NUM_STEPS);
-        // Find first enabled step
         for (int i = 0; i < stepCount; i++) {
-            StepParams sp = StepParams::fromAlgorithm(v, nextStep);
-            if (sp.enabled()) break;
-            nextStep = (nextStep + 1) % stepCount;
+            StepParams sp = StepParams::fromAlgorithm(v, i);
+            if (sp.enabled()) {
+                nextStep = i;
+                break;
+            }
         }
     } else {
         nextStep = calculateNextStep(alg);

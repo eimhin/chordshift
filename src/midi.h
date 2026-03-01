@@ -17,7 +17,7 @@ void sendAllNotesOff(MidiChordsAlgorithm* alg);
 void killAllPlayingNotes(MidiChordsAlgorithm* alg);
 
 // Process delayed notes (strum) — call from step()
-void processDelayedNotes(MidiChordsAlgorithm* alg, float dt);
+void processDelayedNotes(MidiChordsAlgorithm* alg, int elapsedMs);
 
 // Process note durations — send note-offs when gate expires
-void processNoteDurations(MidiChordsAlgorithm* alg, float dt);
+void processNoteDurations(MidiChordsAlgorithm* alg, int elapsedMs);

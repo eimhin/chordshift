@@ -100,6 +100,11 @@ bool deserialiseData(MidiChordsAlgorithm* alg, _NT_jsonParse& parse) {
                     }
                 }
             }
+            // Clear steps not present in the file
+            for (int s = numSteps; s < NUM_STEPS; s++) {
+                alg->stepStates[s].baseChord.count = 0;
+                alg->stepStates[s].lastRendered.count = 0;
+            }
         } else {
             if (!parse.skipMember()) return false;
         }

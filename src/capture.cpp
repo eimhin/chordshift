@@ -25,9 +25,11 @@
 void captureNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity) {
     MidiChords_DTC* dtc = alg->dtc;
 
-    // Track held notes
-    dtc->captureNotes[note] = 1;
-    dtc->captureCount++;
+    // Track held notes (guard against two keys quantizing to same pitch)
+    if (dtc->captureNotes[note] == 0) {
+        dtc->captureNotes[note] = 1;
+        dtc->captureCount++;
+    }
     dtc->inputVel = velocity;
 
     // Snapshot current held notes if this is a new peak
@@ -113,11 +115,8 @@ void captureNoteOff(MidiChordsAlgorithm* alg, uint8_t note) {
     }
 
     // Auto-advance edit step (wrap at stepCount)
-    int nextStep = editStep + 1;
-    if (nextStep >= stepCount) nextStep = 0;
-    // We can't directly set parameter values from code on disting NT,
-    // so we just reset the snapshot for the next capture
-    // The user will manually advance or we track internally
+    int nextStep = (editStep + 1) % stepCount;
+    NT_setParameterFromAudio(NT_algorithmIndex(alg), kParamCurrentStep + NT_parameterOffset(), (int16_t)(nextStep + 1));
 
     // Reset snapshot for next capture
     dtc->snapshotCount = 0;

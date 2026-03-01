@@ -57,6 +57,7 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
     dtc->prevClockHigh = false;
     dtc->stepTime = 0.0f;
     dtc->stepDuration = 0.1f;
+    dtc->msAccum = 0.0f;
     dtc->currentPlayStep = 0;
     dtc->pendulumDir = 0;
     dtc->clockCount = 0;
@@ -184,11 +185,27 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     } else if (gateLow && dtc->prevGateHigh) {
         handleTransportStop(alg);
     }
-    dtc->prevGateHigh = gateHigh && !gateLow;
+    if (gateHigh) dtc->prevGateHigh = true;
+    else if (gateLow) dtc->prevGateHigh = false;
 
     // Clock edge detection
     bool clockRising = clockHigh && !dtc->prevClockHigh;
-    dtc->prevClockHigh = clockHigh && !clockLow;
+    if (clockHigh) dtc->prevClockHigh = true;
+    else if (clockLow) dtc->prevClockHigh = false;
+
+    // Parameter change detection: Record toggle
+    int record = v[kParamRecord];
+    if (record != dtc->lastRecord) {
+        // Reset capture state on any toggle to prevent ghost notes
+        dtc->captureCount = 0;
+        dtc->snapshotCount = 0;
+        dtc->inputVel = 0;
+        for (int i = 0; i < 128; i++) {
+            dtc->captureNotes[i] = 0;
+            dtc->snapshotNotes[i] = 0;
+        }
+        dtc->lastRecord = (int16_t)record;
+    }
 
     // Parameter change detection: Clear Step
     int clearStep = v[kParamClearStep];
@@ -216,13 +233,16 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
 
     // Timing and delayed notes
     dtc->stepTime += dt;
-    processDelayedNotes(alg, dt);
-    processNoteDurations(alg, dt);
+    dtc->msAccum += dt * 1000.0f;
+    int elapsedMs = (int)dtc->msAccum;
+    dtc->msAccum -= (float)elapsedMs;
+    processDelayedNotes(alg, elapsedMs);
+    processNoteDurations(alg, elapsedMs);
 
     // Clock trigger processing
     if (clockRising && transportIsRunning(dtc->transportState)) {
-        // Update step duration estimate
-        if (dtc->stepTime > 0.001f) {
+        // Update step duration estimate (skip first tick — not a real inter-clock interval)
+        if (dtc->stepTime > 0.001f && dtc->clockCount > 0) {
             dtc->stepDuration = dtc->stepTime;
         }
         dtc->stepTime = 0.0f;
@@ -280,19 +300,19 @@ void midiMessage(_NT_algorithm* self, uint8_t byte0, uint8_t byte1, uint8_t byte
             captureNoteOff(alg, byte1);
         }
     } else {
-        // Not recording — just update input display state
+        // Not recording — track held notes for velocity display
         if (isNoteOn) {
+            if (dtc->captureNotes[byte1] == 0) {
+                dtc->captureNotes[byte1] = 1;
+                dtc->captureCount++;
+            }
             dtc->inputVel = byte2;
         } else if (isNoteOff) {
-            // Check if any notes still held
-            bool anyHeld = false;
-            for (int n = 0; n < 128; n++) {
-                if (dtc->captureNotes[n]) {
-                    anyHeld = true;
-                    break;
-                }
+            if (dtc->captureNotes[byte1]) {
+                dtc->captureNotes[byte1] = 0;
+                if (dtc->captureCount > 0) dtc->captureCount--;
             }
-            if (!anyHeld) dtc->inputVel = 0;
+            if (dtc->captureCount == 0) dtc->inputVel = 0;
         }
     }
 }

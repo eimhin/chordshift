@@ -251,6 +251,7 @@ struct MidiChords_DTC {
     bool prevClockHigh;
     float stepTime;
     float stepDuration;
+    float msAccum;         // Fractional millisecond accumulator for timing
     uint8_t currentPlayStep;   // 0-based index of current playing step
     uint8_t pendulumDir;       // 0=forward, 1=backward
     uint16_t clockCount;
