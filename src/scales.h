@@ -17,8 +17,7 @@
 // ============================================================================
 
 enum ScaleType {
-    SCALE_OFF = 0,
-    SCALE_IONIAN,
+    SCALE_IONIAN = 0,
     SCALE_DORIAN,
     SCALE_PHRYGIAN,
     SCALE_LYDIAN,
@@ -30,7 +29,7 @@ enum ScaleType {
     SCALE_MAJ_PENTATONIC,
     SCALE_MIN_PENTATONIC,
 
-    SCALE_COUNT  // = 12
+    SCALE_COUNT  // = 11
 };
 
 // ============================================================================
@@ -64,15 +63,13 @@ struct ScaleData {
     int length;
 };
 
-// Get scale interval data. scaleType must be >= 1 (no SCALE_OFF).
 static inline ScaleData getScaleData(int scaleType) {
     ScaleData sd;
-    int idx = scaleType - 1;  // Interval table is 0-indexed (no OFF entry)
-    if (idx < 0 || idx >= (int)(sizeof(scaleSizes) / sizeof(scaleSizes[0]))) {
-        idx = 0;  // Default to Ionian
+    if (scaleType < 0 || scaleType >= (int)(sizeof(scaleSizes) / sizeof(scaleSizes[0]))) {
+        scaleType = 0;  // Default to Ionian
     }
-    sd.intervals = scaleIntervals[idx];
-    sd.length = scaleSizes[idx];
+    sd.intervals = scaleIntervals[scaleType];
+    sd.length = scaleSizes[scaleType];
     return sd;
 }
 
@@ -89,10 +86,9 @@ static const int PC_TO_WHITE_KEY[12] = {
 // Quantize a MIDI note to the given root + scale via white-key mapping.
 // White key C always gives root, D gives degree 1, etc.
 static inline uint8_t quantizeToScale(uint8_t note, int root, int scaleType) {
-    if (scaleType <= SCALE_OFF || scaleType >= SCALE_COUNT) return note;
+    if (scaleType < 0 || scaleType >= SCALE_COUNT) return note;
 
-    int scaleIdx = scaleType - 1;
-    int scaleSize = scaleSizes[scaleIdx];
+    int scaleSize = scaleSizes[scaleType];
 
     int pc = note % 12;
     int octave = note / 12;
@@ -101,7 +97,7 @@ static inline uint8_t quantizeToScale(uint8_t note, int root, int scaleType) {
     int extraOctave = whiteKeyIdx / scaleSize;
     int scaleDegree = whiteKeyIdx % scaleSize;
 
-    int outNote = (octave + extraOctave) * 12 + root + scaleIntervals[scaleIdx][scaleDegree];
+    int outNote = (octave + extraOctave) * 12 + root + scaleIntervals[scaleType][scaleDegree];
 
     if (outNote < 0) outNote = 0;
     if (outNote > 127) outNote = 127;

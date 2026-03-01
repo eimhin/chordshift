@@ -70,7 +70,7 @@ static const _NT_parameter parameters[] = {
 
     // Scale (8-10)
     {.name = "Root", .min = 0, .max = 11, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleRootStrings},
-    {.name = "Scale", .min = 1, .max = 11, .def = 1, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleTypeStrings},
+    {.name = "Scale", .min = 0, .max = 10, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleTypeStrings},
     {.name = "Octave", .min = 1, .max = 7, .def = 3, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
 
     // Pitch transforms (11-14)
