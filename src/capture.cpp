@@ -2,7 +2,7 @@
  * MIDI Chords - Capture Pipeline
  *
  * When Record=On, incoming MIDI notes are accumulated. On each note-on,
- * snapshot the held notes (capturing largest chord). When last note released,
+ * snapshot the held notes (capturing latest chord at peak size). When last note released,
  * run the capture pipeline on the snapshot:
  *
  * 1. Convert to degree (midiNoteToDegree on already-quantized notes)

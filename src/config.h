@@ -23,7 +23,7 @@
 
 static constexpr int NUM_STEPS = 8;            // Fixed 8-step sequencer
 static constexpr int MAX_CHORD_NOTES = 8;      // Max notes per stored chord
-static constexpr int MAX_RENDER_NOTES = 32;    // Max notes after transforms (spread/ratchet can expand)
+static constexpr int MAX_RENDER_NOTES = 64;    // Max notes after transforms (direction + ratchet can expand)
 static constexpr int MAX_DELAYED_NOTES = 64;   // Strum delay buffer size
 
 // ============================================================================
