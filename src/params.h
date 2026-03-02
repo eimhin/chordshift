@@ -61,7 +61,7 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Edit Step", .min = 1, .max = 8, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
 
     // MIDI (4-6)
-    {.name = "MIDI In Ch", .min = 0, .max = 16, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
+    {.name = "MIDI In Ch", .min = 0, .max = 16, .def = 1, .unit = kNT_unitHasStrings, .scaling = 0, .enumStrings = NULL},
     {.name = "MIDI Out Ch", .min = 1, .max = 16, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Destination", .min = 0, .max = 4, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = midiDestStrings},
 
@@ -71,7 +71,7 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     // Scale (8-10)
     {.name = "Root", .min = 0, .max = 11, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleRootStrings},
     {.name = "Scale", .min = 0, .max = 10, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleTypeStrings},
-    {.name = "Octave", .min = 1, .max = 7, .def = 3, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
+    {.name = "Octave", .min = 1, .max = 7, .def = 3, .unit = kNT_unitHasStrings, .scaling = 0, .enumStrings = NULL},
 
     // Pitch transforms (11-14)
     {.name = "Transpose", .min = -14, .max = 14, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
@@ -121,6 +121,9 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
 
 #undef STEP_PARAMS
 
+static_assert(MAX_TOTAL_PARAMS == ARRAY_SIZE(parameters),
+              "MAX_TOTAL_PARAMS must match actual parameters array size");
+
 // ============================================================================
 // PARAMETER PAGES
 // ============================================================================
@@ -160,14 +163,14 @@ struct GlobalPageInfo {
 };
 
 static const GlobalPageInfo globalPages[] = {
-    {"Routing",    pageRouting,    sizeof(pageRouting) / sizeof(pageRouting[0])},
-    {"Scale",      pageScale,      sizeof(pageScale) / sizeof(pageScale[0])},
-    {"Record",     pageRecord,     sizeof(pageRecord) / sizeof(pageRecord[0])},
-    {"Output",     pageOutput,     sizeof(pageOutput) / sizeof(pageOutput[0])},
-    {"Pitch",      pagePitch,      sizeof(pagePitch) / sizeof(pagePitch[0])},
-    {"Voicing",    pageVoicing,    sizeof(pageVoicing) / sizeof(pageVoicing[0])},
-    {"Order",      pageOrder,      sizeof(pageOrder) / sizeof(pageOrder[0])},
-    {"Articulate", pageArticulate, sizeof(pageArticulate) / sizeof(pageArticulate[0])},
+    {"Routing",    pageRouting,    ARRAY_SIZE(pageRouting)},
+    {"Scale",      pageScale,      ARRAY_SIZE(pageScale)},
+    {"Record",     pageRecord,     ARRAY_SIZE(pageRecord)},
+    {"Output",     pageOutput,     ARRAY_SIZE(pageOutput)},
+    {"Pitch",      pagePitch,      ARRAY_SIZE(pagePitch)},
+    {"Voicing",    pageVoicing,    ARRAY_SIZE(pageVoicing)},
+    {"Order",      pageOrder,      ARRAY_SIZE(pageOrder)},
+    {"Articulate", pageArticulate, ARRAY_SIZE(pageArticulate)},
 };
 
 static constexpr int NUM_GLOBAL_PAGES = 8;

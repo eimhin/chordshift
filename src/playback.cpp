@@ -102,7 +102,7 @@ void handleTransportStart(MidiChordsAlgorithm* alg) {
     dtc->pendulumDir = 0;
     dtc->firstTick = true;
     dtc->stepTime = 0.0f;
-    dtc->stepDuration = 0.1f;
+    // Preserve stepDuration from previous run so first chord gate is accurate
     dtc->msAccum = 0.0f;
     dtc->transportState = TRANSPORT_RUNNING;
 }

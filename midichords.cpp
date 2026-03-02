@@ -34,7 +34,7 @@
 
 void calculateRequirements(_NT_algorithmRequirements& req, const int32_t* specs) {
     (void)specs;
-    req.numParameters = MAX_TOTAL_PARAMS;
+    req.numParameters = ARRAY_SIZE(parameters);
     req.sram = sizeof(MidiChordsAlgorithm);
     req.dram = sizeof(StepState) * NUM_STEPS;
     req.dtc = sizeof(MidiChords_DTC);
@@ -296,6 +296,23 @@ void midiMessage(_NT_algorithm* self, uint8_t byte0, uint8_t byte1, uint8_t byte
 // UI AND SERIALIZATION WRAPPERS
 // ============================================================================
 
+int parameterString(_NT_algorithm* self, int p, int v, char* buff) {
+    (void)self;
+    if (p == kParamMidiInCh) {
+        if (v == 0) {
+            buff[0] = 'A'; buff[1] = 'l'; buff[2] = 'l'; buff[3] = '\0';
+            return 3;
+        }
+        return NT_intToString(buff, v);
+    }
+    if (p == kParamOctaveBase) {
+        buff[0] = 'C';
+        int len = 1 + NT_intToString(buff + 1, v - 2);
+        return len;
+    }
+    return 0;
+}
+
 bool draw(_NT_algorithm* self) {
     MidiChordsAlgorithm* alg = (MidiChordsAlgorithm*)self;
     alg->dtc->drawFrameCount++;
@@ -327,7 +344,7 @@ static const _NT_factory factory = {
     .draw = draw,
     .midiRealtime = NULL,
     .midiMessage = midiMessage,
-    .tags = kNT_tagUtility,
+    .tags = kNT_tagInstrument | kNT_tagUtility,
     .hasCustomUi = NULL,
     .customUi = NULL,
     .setupUi = NULL,
@@ -335,7 +352,7 @@ static const _NT_factory factory = {
     .deserialise = deserialise,
     .midiSysEx = NULL,
     .parameterUiPrefix = NULL,
-    .parameterString = NULL,
+    .parameterString = parameterString,
 };
 
 // ============================================================================
@@ -345,7 +362,7 @@ static const _NT_factory factory = {
 uintptr_t pluginEntry(_NT_selector selector, uint32_t data) {
     switch (selector) {
     case kNT_selector_version:
-        return kNT_apiVersion13;
+        return kNT_apiVersionCurrent;
     case kNT_selector_numFactories:
         return 1;
     case kNT_selector_factoryInfo:
