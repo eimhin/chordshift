@@ -177,7 +177,7 @@ static void applyDirection(DegreeBuffer* buf, int dir, uint32_t& randState) {
             applyReverse(buf);
             break;
 
-        case DIR_PINGPONG:
+        case DIR_PENDULUM:
             // Forward then backward (without repeating endpoints)
             // [0,1,2,3] -> [0,1,2,3,2,1]
             {
@@ -240,6 +240,60 @@ static void applyDirection(DegreeBuffer* buf, int dir, uint32_t& randState) {
                 int16_t tmp = buf->degrees[i];
                 buf->degrees[i] = buf->degrees[j];
                 buf->degrees[j] = tmp;
+            }
+            break;
+
+        case DIR_BOTTOM_REPEAT:
+            // Pedal first note with each subsequent: [0,1,2,3,4] -> [0,1,0,2,0,3,0,4]
+            {
+                int newCount = n > 1 ? 2 * (n - 1) : n;
+                if (newCount > MAX_RENDER_NOTES) newCount = MAX_RENDER_NOTES;
+                int16_t first = buf->degrees[0];
+                int idx = 0;
+                for (int i = 1; i < n && idx < newCount; i++) {
+                    if (idx < newCount) temp[idx++] = first;
+                    if (idx < newCount) temp[idx++] = buf->degrees[i];
+                }
+                for (int i = 0; i < idx; i++) {
+                    buf->degrees[i] = temp[i];
+                }
+                buf->count = (uint8_t)idx;
+            }
+            break;
+
+        case DIR_TOP_REPEAT:
+            // Pedal last note with each preceding: [0,1,2,3,4] -> [0,4,1,4,2,4,3,4]
+            {
+                int newCount = n > 1 ? 2 * (n - 1) : n;
+                if (newCount > MAX_RENDER_NOTES) newCount = MAX_RENDER_NOTES;
+                int16_t last = buf->degrees[n - 1];
+                int idx = 0;
+                for (int i = 0; i < n - 1 && idx < newCount; i++) {
+                    if (idx < newCount) temp[idx++] = buf->degrees[i];
+                    if (idx < newCount) temp[idx++] = last;
+                }
+                for (int i = 0; i < idx; i++) {
+                    buf->degrees[i] = temp[i];
+                }
+                buf->count = (uint8_t)idx;
+            }
+            break;
+
+        case DIR_PINGPONG:
+            // Forward then full backward (endpoints repeated): [0,1,2,3,4] -> [0,1,2,3,4,4,3,2,1,0]
+            {
+                int newCount = 2 * n;
+                if (newCount > MAX_RENDER_NOTES) newCount = MAX_RENDER_NOTES;
+                for (int i = 0; i < n && i < newCount; i++) {
+                    temp[i] = buf->degrees[i];
+                }
+                for (int i = 0; i < n && (n + i) < newCount; i++) {
+                    temp[n + i] = buf->degrees[n - 1 - i];
+                }
+                for (int i = 0; i < newCount; i++) {
+                    buf->degrees[i] = temp[i];
+                }
+                buf->count = (uint8_t)newCount;
             }
             break;
     }

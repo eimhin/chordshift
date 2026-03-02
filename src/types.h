@@ -53,10 +53,13 @@ static constexpr int NORM_FIRST_TO_0 = 2;
 // Direction modes (note order within chord)
 static constexpr int DIR_FORWARD = 0;
 static constexpr int DIR_BACKWARD = 1;
-static constexpr int DIR_PINGPONG = 2;
-static constexpr int DIR_INSIDE_OUT = 3;
-static constexpr int DIR_OUTSIDE_IN = 4;
-static constexpr int DIR_RANDOM = 5;
+static constexpr int DIR_PENDULUM = 2;
+static constexpr int DIR_PINGPONG = 3;
+static constexpr int DIR_INSIDE_OUT = 4;
+static constexpr int DIR_OUTSIDE_IN = 5;
+static constexpr int DIR_RANDOM = 6;
+static constexpr int DIR_BOTTOM_REPEAT = 7;
+static constexpr int DIR_TOP_REPEAT = 8;
 
 // Velocity curve types
 static constexpr int VCURVE_LINEAR = 0;
@@ -104,13 +107,15 @@ enum {
     kParamStrumTime,
     kParamVelCurve,
     kParamVelDepth,
+    kParamTimeCurve,
+    kParamTimeDepth,
     kParamPlayMode,
     kParamStepCount,
     kParamCaptureNorm,
     kParamClearStep,
     kParamClearAll,
 
-    kGlobalParamCount  // = 28
+    kGlobalParamCount  // = 30
 };
 
 // Per-step parameter offsets

@@ -4,7 +4,7 @@
  * Converts transformed DegreeBuffer to RenderedChord:
  * 1. degreeToMidi() for each degree
  * 2. Apply velocity curve scaled by depth
- * 3. Apply strum delay (index * strumTime)
+ * 3. Apply strum delay with time curve modulation
  * 4. Apply ratchet (repeat N times with time offset)
  * 5. Calculate gate length (stepDuration * gateLength%)
  * 6. Clamp all values to valid MIDI ranges
@@ -52,6 +52,31 @@ static int velocityCurveOffset(int index, int count, int curve, int depth, uint3
 }
 
 // ============================================================================
+// STRUM DELAY WITH TIME CURVE
+// ============================================================================
+
+static uint16_t strumDelay(int index, int count, int strumTime, int curve, int depth, uint32_t& randState) {
+    if (count <= 1 || strumTime == 0) return 0;
+    float t = (float)index / (float)(count - 1);
+    float total = (float)(count - 1) * (float)strumTime;
+    if (depth == 0 || curve == 0) {
+        return (uint16_t)clamp((int)(t * total), 0, 10000);
+    }
+    float curvedT = t;
+    switch (curve) {
+        case 1: curvedT = t; break;                // Linear (same as no curve)
+        case 2: curvedT = t * t; break;             // Exp — cluster start, spread end
+        case 3:                                      // Triangle — rush middle
+            curvedT = (t < 0.5f) ? (2.0f * t * t) : (1.0f - 2.0f * (1.0f - t) * (1.0f - t));
+            break;
+        case 4: curvedT = (t < 0.5f) ? 0.0f : 1.0f; break;  // Square — split
+        case 5: curvedT = randFloat(randState); break;         // Random
+    }
+    float blend = t + (curvedT - t) * ((float)depth / 100.0f);
+    return (uint16_t)clamp((int)(blend * total), 0, 10000);
+}
+
+// ============================================================================
 // RENDER
 // ============================================================================
 
@@ -69,6 +94,8 @@ void renderChord(RenderedChord* out, const DegreeBuffer* buf, const int16_t* v,
     int velCurve = v[kParamVelCurve];
     int velDepth = v[kParamVelDepth];
     int strumTime = v[kParamStrumTime] + sp.strumTime();  // additive
+    int timeCurve = v[kParamTimeCurve];
+    int timeDepth = v[kParamTimeDepth];
     int velOffset = sp.velocity();  // per-step velocity offset
     int gatePercent = sp.gateLength();
     int ratchetCount = sp.repeat();
@@ -97,8 +124,8 @@ void renderChord(RenderedChord* out, const DegreeBuffer* buf, const int16_t* v,
             vel += velocityCurveOffset(i, buf->count, velCurve, velDepth, randState);
             vel = clamp(vel, 1, 127);
 
-            // Calculate strum delay
-            uint16_t delay = (uint16_t)clamp(i * strumTime, 0, 10000);
+            // Calculate strum delay with time curve
+            uint16_t delay = strumDelay(i, buf->count, strumTime, timeCurve, timeDepth, randState);
             delay += ratchetOffset;
 
             RenderedNote* rn = &out->notes[out->count];
