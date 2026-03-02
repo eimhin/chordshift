@@ -250,6 +250,9 @@ struct MidiChords_DTC {
     uint8_t captureCount;
     uint8_t snapshotCount;
     uint8_t inputVel;
+
+    // UI frame counter for blink effects
+    uint16_t drawFrameCount;
 };
 
 // UI layout constants
@@ -257,6 +260,9 @@ static constexpr int UI_LEFT_MARGIN = 2;
 static constexpr int UI_BRIGHTNESS_MAX = 15;
 static constexpr int UI_BRIGHTNESS_DIM = 1;
 static constexpr int UI_BRIGHTNESS_MED = 6;
+
+// Blink timing
+static constexpr int UI_BLINK_HALF_PERIOD = 15;
 
 // Step grid layout
 static constexpr int UI_STEP_Y = 10;

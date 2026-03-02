@@ -282,7 +282,11 @@ void midiMessage(_NT_algorithm* self, uint8_t byte0, uint8_t byte1, uint8_t byte
 // UI AND SERIALIZATION WRAPPERS
 // ============================================================================
 
-bool draw(_NT_algorithm* self) { return drawUI((MidiChordsAlgorithm*)self); }
+bool draw(_NT_algorithm* self) {
+    MidiChordsAlgorithm* alg = (MidiChordsAlgorithm*)self;
+    alg->dtc->drawFrameCount++;
+    return drawUI(alg);
+}
 
 void serialise(_NT_algorithm* self, _NT_jsonStream& stream) { serialiseData((MidiChordsAlgorithm*)self, stream); }
 

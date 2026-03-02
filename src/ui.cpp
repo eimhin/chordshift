@@ -5,7 +5,6 @@
  * - Row 0-8: Standard param line (returned by draw() returning false)
  * - Row 10-28: 8 step boxes showing chord info
  * - Row 30-62: Current playing chord visualization
- * - Transport indicator (top-left) when running
  */
 
 #include "ui.h"
@@ -53,9 +52,13 @@ static void drawStepGrid(MidiChordsAlgorithm* alg) {
             NT_drawShapeI(kNT_rectangle, x, y, x2, y2, fill);
         }
 
-        // Edit step outline
+        // Edit step outline (blinks when recording)
         if (isEdit) {
-            NT_drawShapeI(kNT_box, x, y, x2, y2, UI_BRIGHTNESS_MAX);
+            bool recording = (v[kParamRecord] == 1);
+            bool showOutline = !recording || (dtc->drawFrameCount / UI_BLINK_HALF_PERIOD) & 1;
+            if (showOutline) {
+                NT_drawShapeI(kNT_box, x, y, x2, y2, UI_BRIGHTNESS_MAX);
+            }
         }
 
         // Step number
@@ -122,29 +125,10 @@ static void drawChordVisualization(MidiChordsAlgorithm* alg) {
 }
 
 // ============================================================================
-// TRANSPORT INDICATOR
-// ============================================================================
-
-static void drawTransportIndicator(MidiChordsAlgorithm* alg) {
-    MidiChords_DTC* dtc = alg->dtc;
-
-    if (transportIsRunning(dtc->transportState)) {
-        // Play triangle (top-right area to avoid param line)
-        int x = 244;
-        int y = 2;
-        for (int i = 0; i <= 6; i++) {
-            int halfW = (i <= 3) ? i : (6 - i);
-            NT_drawShapeI(kNT_line, x, y + i, x + halfW * 2, y + i, UI_BRIGHTNESS_MAX);
-        }
-    }
-}
-
-// ============================================================================
 // MAIN DRAW
 // ============================================================================
 
 bool drawUI(MidiChordsAlgorithm* alg) {
-    drawTransportIndicator(alg);
     drawStepGrid(alg);
     drawChordVisualization(alg);
 
