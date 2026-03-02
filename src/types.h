@@ -253,6 +253,9 @@ struct MidiChords_DTC {
 
     // UI frame counter for blink effects
     uint16_t drawFrameCount;
+
+    // Set on first step() call to sync edge detection state after preset load
+    bool initialized;
 };
 
 // UI layout constants

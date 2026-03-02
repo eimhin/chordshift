@@ -25,8 +25,6 @@ static const char* const normalizeStrings[] = {"None", "Lowest=0", "First=0", NU
 static const char* const directionStrings[] = {"Forward", "Backward", "Pingpong", "InsideOut", "OutsideIn", "Random", NULL};
 static const char* const velCurveStrings[] = {"Linear", "Exp", "Triangle", "Square", "Random", NULL};
 static const char* const playModeStrings[] = {"Forward", "Reverse", "Pendulum", "Random", NULL};
-static const char* const stepNumStrings[] = {"1", "2", "3", "4", "5", "6", "7", "8", NULL};
-
 // ============================================================================
 // STEP PARAMETER MACRO
 // ============================================================================

@@ -163,6 +163,19 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     if (clockHigh) dtc->prevClockHigh = true;
     else if (clockLow) dtc->prevClockHigh = false;
 
+    // Force trigger params off on first step() after construct/preset load.
+    // Sync last* to suppress edge detection in case v[] hasn't updated yet.
+    if (!dtc->initialized) {
+        uint32_t idx = NT_algorithmIndex(self);
+        NT_setParameterFromAudio(idx, kParamClearStep, 0);
+        NT_setParameterFromAudio(idx, kParamClearAll, 0);
+        NT_setParameterFromAudio(idx, kParamRecord, 0);
+        dtc->lastClearStep = v[kParamClearStep];
+        dtc->lastClearAll = v[kParamClearAll];
+        dtc->lastRecord = v[kParamRecord];
+        dtc->initialized = true;
+    }
+
     // Parameter change detection: Record toggle
     int record = v[kParamRecord];
     if (record != dtc->lastRecord) {
