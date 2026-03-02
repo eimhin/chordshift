@@ -167,9 +167,10 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     // Sync last* to suppress edge detection in case v[] hasn't updated yet.
     if (!dtc->initialized) {
         uint32_t idx = NT_algorithmIndex(self);
-        NT_setParameterFromAudio(idx, kParamClearStep, 0);
-        NT_setParameterFromAudio(idx, kParamClearAll, 0);
-        NT_setParameterFromAudio(idx, kParamRecord, 0);
+        uint32_t off = NT_parameterOffset();
+        NT_setParameterFromAudio(idx, kParamClearStep + off, 0);
+        NT_setParameterFromAudio(idx, kParamClearAll + off, 0);
+        NT_setParameterFromAudio(idx, kParamRecord + off, 0);
         dtc->lastClearStep = v[kParamClearStep];
         dtc->lastClearAll = v[kParamClearAll];
         dtc->lastRecord = v[kParamRecord];
