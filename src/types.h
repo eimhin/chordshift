@@ -302,8 +302,9 @@ struct MidiChordsAlgorithm : public _NT_algorithm {
     _NT_parameterPage pageDefs[MAX_PAGES];
     _NT_parameterPages dynamicPages;
 
-    // Active output note count (for early-exit optimization)
+    // Active note counts (for early-exit optimization)
     uint8_t activeNoteCount;
+    uint8_t delayedNoteCount;
 
     // PRNG state
     uint32_t randState;

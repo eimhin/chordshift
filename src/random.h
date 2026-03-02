@@ -24,5 +24,5 @@ static inline int randRange(uint32_t& state, int min, int max) {
 }
 
 static inline float randFloat(uint32_t& state) {
-    return (float)(nextRand(state) & 0xFFFFFF) / (float)0xFFFFFF;
+    return (float)(nextRand(state) & 0xFFFFFF) * (1.0f / 16777215.0f);
 }

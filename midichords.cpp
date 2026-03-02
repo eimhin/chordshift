@@ -73,8 +73,9 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
         pThis->delayedNotes[i].active = false;
     }
 
-    // Initialize active note count
+    // Initialize active note counts
     pThis->activeNoteCount = 0;
+    pThis->delayedNoteCount = 0;
 
     // Seed PRNG
     pThis->randState = NT_getCpuCycleCount();

@@ -44,6 +44,7 @@ static bool scheduleDelayedNote(MidiChordsAlgorithm* alg, uint8_t note, uint8_t 
             dn->gateMs = gateMs;
             dn->delayMs = delayMs;
             dn->where = where;
+            alg->delayedNoteCount++;
             return true;
         }
     }
@@ -91,8 +92,11 @@ void killAllPlayingNotes(MidiChordsAlgorithm* alg) {
     }
 
     // Cancel pending delayed notes
-    for (int i = 0; i < MAX_DELAYED_NOTES; i++) {
-        alg->delayedNotes[i].active = false;
+    if (alg->delayedNoteCount > 0) {
+        for (int i = 0; i < MAX_DELAYED_NOTES; i++) {
+            alg->delayedNotes[i].active = false;
+        }
+        alg->delayedNoteCount = 0;
     }
 }
 
@@ -101,7 +105,7 @@ void killAllPlayingNotes(MidiChordsAlgorithm* alg) {
 // ============================================================================
 
 void processDelayedNotes(MidiChordsAlgorithm* alg, int elapsedMs) {
-    if (elapsedMs <= 0) return;
+    if (elapsedMs <= 0 || alg->delayedNoteCount == 0) return;
 
     for (int i = 0; i < MAX_DELAYED_NOTES; i++) {
         DelayedNote* dn = &alg->delayedNotes[i];
@@ -111,6 +115,7 @@ void processDelayedNotes(MidiChordsAlgorithm* alg, int elapsedMs) {
             // Time to send
             sendNoteOn(alg, dn->note, dn->velocity, dn->gateMs, dn->outCh, dn->where);
             dn->active = false;
+            if (alg->delayedNoteCount > 0) alg->delayedNoteCount--;
         } else {
             dn->delayMs -= (uint16_t)elapsedMs;
         }
