@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Parameter Definitions
+ * Chordshift - Parameter Definitions
  * Parameter arrays and page definitions for the distingNT UI
  */
 
@@ -22,10 +22,10 @@ static const char* const scaleTypeStrings[] = {"Ionian", "Dorian", "Phrygian", "
 static const char* const reflectStrings[] = {"Off", "Root", "Lowest", "Highest", NULL};
 static const char* const anchorStrings[] = {"Lowest", "Center", NULL};
 static const char* const normalizeStrings[] = {"None", "Lowest=0", "First=0", NULL};
-static const char* const directionStrings[] = {"Forward", "Backward", "Pendulum", "PingPong", "InsideOut", "OutsideIn",
-                                               "Random", "BotRepeat", "TopRepeat", NULL};
-static const char* const velCurveStrings[] = {"Linear", "Exp", "Triangle", "Square", "Random", NULL};
-static const char* const timeCurveStrings[] = {"Off", "Linear", "Exp", "Triangle", "Square", "Random", NULL};
+static const char* const directionStrings[] = {"Up", "Down", "Pendulum", "PingPong", "Diverge", "Converge",
+                                               "Random", "Pedal Lo", "Pedal Hi", NULL};
+static const char* const velCurveStrings[] = {"Ramp", "Curve", "Peak", "Step", "Random", NULL};
+static const char* const timeCurveStrings[] = {"Off", "Ramp", "Curve", "Peak", "Step", "Random", NULL};
 static const char* const playModeStrings[] = {"Forward", "Reverse", "Pendulum", "Random", NULL};
 // ============================================================================
 // STEP PARAMETER MACRO
@@ -90,11 +90,11 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
 
     // Articulation (20-22)
     {.name = "Strum", .min = 0, .max = 100, .def = 0, .unit = kNT_unitMs, .scaling = 0, .enumStrings = NULL},
-    {.name = "Vel Curve", .min = 0, .max = 4, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = velCurveStrings},
+    {.name = "Vel Shape", .min = 0, .max = 4, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = velCurveStrings},
     {.name = "Vel Depth", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
     // Time curve (23-24)
-    {.name = "Time Curve", .min = 0, .max = 5, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = timeCurveStrings},
+    {.name = "Time Shape", .min = 0, .max = 5, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = timeCurveStrings},
     {.name = "Time Depth", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
     // Playback (25-26)

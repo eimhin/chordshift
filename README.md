@@ -1,4 +1,4 @@
-# MIDI Chords
+# Chordshift
 
 An 8-step diatonic transform chord sequencer for the [Expert Sleepers disting NT](https://expert-sleepers.co.uk/distingNT.html).
 
@@ -6,9 +6,9 @@ Record chords from a MIDI keyboard, then play them back as a sequence with a ric
 
 ## Installation
 
-1. Download the latest `midichords.o` from [Releases](../../releases)
+1. Download the latest `chordshift.o` from [Releases](../../releases)
 2. Copy to an SD card or push via MIDI using [ntpush](https://github.com/expertsleepersltd/distingNT/blob/main/tools/push_plugin_to_device.py)
-3. Load the plugin on your disting NT — it appears as **MIDI Chords** under Instrument/Utility
+3. Load the plugin on your disting NT — it appears as **Chordshift** under Instrument/Utility
 
 ## Quick Start
 
@@ -87,7 +87,7 @@ Global pitch transforms — combined additively with per-step values.
 
 | Parameter | Range                                                                                             | Default | Description                                          |
 | --------- | ------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------------------- |
-| Direction | Forward / Backward / Pendulum / PingPong / InsideOut / OutsideIn / Random / BotRepeat / TopRepeat | Forward | Note playback order within the chord (affects strum) |
+| Direction | Up / Down / Pendulum / PingPong / Diverge / Converge / Random / Pedal Lo / Pedal Hi | Up | Note playback order within the chord (affects strum) |
 | Reverse   | No / Yes                                                                                          | No      | Reverse the note order                               |
 | Play Mode | Forward / Reverse / Pendulum / Random                                                             | Forward | Step sequencer direction                             |
 | Steps     | 1 – 8                                                                                             | 8       | Number of active steps                               |
@@ -97,9 +97,9 @@ Global pitch transforms — combined additively with per-step values.
 | Parameter  | Range                                           | Default | Description                                 |
 | ---------- | ----------------------------------------------- | ------- | ------------------------------------------- |
 | Strum      | 0 – 100 ms                                      | 0       | Delay between successive notes in the chord |
-| Vel Curve  | Linear / Exp / Triangle / Square / Random       | Linear  | Velocity distribution across strummed notes |
+| Vel Shape  | Ramp / Curve / Peak / Step / Random              | Ramp    | Velocity distribution across strummed notes |
 | Vel Depth  | 0 – 100%                                        | 0       | Amount of velocity curve applied            |
-| Time Curve | Off / Linear / Exp / Triangle / Square / Random | Off     | Strum timing distribution                   |
+| Time Shape | Off / Ramp / Curve / Peak / Step / Random        | Off     | Strum timing distribution                   |
 | Time Depth | 0 – 100%                                        | 0       | Amount of time curve applied                |
 
 ### Per-Step (Step 1–8)
@@ -149,6 +149,6 @@ Requires `arm-none-eabi-g++` (ARM GCC toolchain).
 ```bash
 git clone --recurse-submodules <repo-url>
 cd midi-chords
-make            # Build midichords.o
+make            # Build chordshift.o
 make push       # Build and push to disting NT via ntpush
 ```
