@@ -1,8 +1,8 @@
 # Chordshift
 
-An 8-step diatonic transform chord sequencer for the [Expert Sleepers disting NT](https://expert-sleepers.co.uk/distingNT.html).
+A diatonic transform chord sequencer for the [Expert Sleepers disting NT](https://expert-sleepers.co.uk/distingNT.html).
 
-Record chords from a MIDI keyboard, then play them back as a sequence with a rich transform pipeline — transposition, inversion, rotation, spread, strumming, and more. All pitch logic operates in scale-degree space, so chords are always in-key and respond instantly when you change root or scale.
+Record chords from a MIDI keyboard or select from built-in templates, then play them back as a sequence with a rich transform pipeline — transposition, inversion, rotation, spread, strumming, and more. All pitch logic operates in scale-degree space, so chords are always in-key and respond instantly when you change root or scale.
 
 ## Installation
 
@@ -55,6 +55,8 @@ The display shows a step grid (top) and a velocity/note visualization of the cur
 | Capture Norm | Off, On   | Off     | Normalize captured chords so the lowest note becomes degree 0 |
 | Clear Step   | No, Yes   | No      | Clear the current edit step                                   |
 | Clear All    | No, Yes   | No      | Clear all steps                                               |
+| Copy Step    | No, Yes   | No      | Copy current edit step to clipboard                           |
+| Paste Step   | No, Yes   | No      | Paste clipboard to current edit step                          |
 
 ### Output
 
@@ -109,6 +111,7 @@ Each step has its own set of transforms that combine with the global values.
 
 | Parameter | Range                                                                       | Default | Combination                                          |
 | --------- | --------------------------------------------------------------------------- | ------- | ---------------------------------------------------- |
+| Template  | Custom, Note, Fifth, Triad, 7th, Sus2, Sus4, Shell, Quartal, Cluster       | Custom  | Uses template degrees instead of captured chord      |
 | Enabled   | No, Yes                                                                     | Yes     | —                                                    |
 | Transpose | -14 – +14                                                                   | 0       | Additive (global + step)                             |
 | Inversion | -4 – +4                                                                     | 0       | Additive                                             |
