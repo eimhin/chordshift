@@ -74,6 +74,10 @@ static constexpr int PLAY_REVERSE = 1;
 static constexpr int PLAY_PENDULUM = 2;
 static constexpr int PLAY_RANDOM = 3;
 
+// Clock division lookup table
+static constexpr int CLOCK_DIV_VALUES[] = {1, 2, 3, 4, 6, 8, 12, 16};
+static constexpr int NUM_CLOCK_DIV_VALUES = 8;
+
 // Gate detection thresholds
 static constexpr float GATE_THRESHOLD_HIGH = 2.0f;
 static constexpr float GATE_THRESHOLD_LOW = 0.5f;
@@ -111,11 +115,12 @@ enum {
     kParamTimeDepth,
     kParamPlayMode,
     kParamStepCount,
+    kParamClockDiv,
     kParamCaptureNorm,
     kParamClearStep,
     kParamClearAll,
 
-    kGlobalParamCount  // = 30
+    kGlobalParamCount  // = 31
 };
 
 // Per-step parameter offsets
@@ -132,8 +137,10 @@ enum {
     kStepProbability,
     kStepReflect,
     kStepRepeat,
+    kStepHold,
+    kStepDirection,
 
-    kStepParamCount  // = 12
+    kStepParamCount  // = 14
 };
 
 // Validate parameter layout matches config constants
@@ -178,6 +185,8 @@ struct StepParams {
     int probability() const { return clamp(raw(kStepProbability), 0, 100); }
     int reflect() const { return raw(kStepReflect); }
     int repeat() const { return clamp(raw(kStepRepeat), 1, 4); }
+    int hold() const { return clamp(raw(kStepHold), 1, 8); }
+    int direction() const { return raw(kStepDirection); }
 };
 
 // ============================================================================
@@ -245,6 +254,8 @@ struct Chordshift_DTC {
     uint8_t currentPlayStep;   // 0-based index of current playing step
     uint8_t pendulumDir;       // 0=forward, 1=backward
     bool firstTick;
+    uint8_t clockDivCounter;
+    uint8_t stepHoldCounter;
 
     // Parameter change detection
     int16_t lastRecord;

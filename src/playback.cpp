@@ -101,6 +101,8 @@ void handleTransportStart(ChordshiftAlgorithm* alg) {
     dtc->currentPlayStep = 0;
     dtc->pendulumDir = 0;
     dtc->firstTick = true;
+    dtc->clockDivCounter = 0;
+    dtc->stepHoldCounter = 0;
     dtc->stepTime = 0.0f;
     // Preserve stepDuration from previous run so first chord gate is accurate
     dtc->msAccum = 0.0f;
@@ -117,6 +119,8 @@ void handleTransportStop(ChordshiftAlgorithm* alg) {
 
     dtc->currentPlayStep = 0;
     dtc->firstTick = false;
+    dtc->clockDivCounter = 0;
+    dtc->stepHoldCounter = 0;
     dtc->stepTime = 0.0f;
 }
 
@@ -127,6 +131,12 @@ void handleTransportStop(ChordshiftAlgorithm* alg) {
 void processClockTick(ChordshiftAlgorithm* alg) {
     Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
+
+    // Hold: consume remaining hold ticks silently
+    if (!dtc->firstTick && dtc->stepHoldCounter > 0) {
+        dtc->stepHoldCounter--;
+        return;
+    }
 
     // Kill any currently playing notes before new step
     killAllPlayingNotes(alg);
@@ -153,8 +163,11 @@ void processClockTick(ChordshiftAlgorithm* alg) {
 
     dtc->currentPlayStep = (uint8_t)nextStep;
 
-    // Check probability gate
+    // Check probability gate and read step params
     StepParams sp = StepParams::fromAlgorithm(v, nextStep);
+
+    // Set hold counter for this step
+    dtc->stepHoldCounter = (uint8_t)(sp.hold() - 1);
     int prob = sp.probability();
     if (prob < 100) {
         if ((int)(randFloat(alg->randState) * 100.0f) >= prob) {
@@ -176,9 +189,10 @@ void processClockTick(ChordshiftAlgorithm* alg) {
     // Apply transform pipeline
     applyTransforms(&buf, v, nextStep, alg->randState);
 
-    // Render to MIDI
+    // Render to MIDI (scale gate duration by hold value)
     RenderedChord rendered;
-    renderChord(&rendered, &buf, v, nextStep, dtc->stepDuration, alg->randState);
+    float effectiveDuration = dtc->stepDuration * (float)sp.hold();
+    renderChord(&rendered, &buf, v, nextStep, effectiveDuration, alg->randState);
 
     // Cache for UI display
     ss->lastRendered = rendered;

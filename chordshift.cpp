@@ -222,15 +222,31 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     processDelayedNotes(alg, elapsedMs);
     processNoteDurations(alg, elapsedMs);
 
-    // Clock trigger processing
+    // Clock trigger processing (with division)
     if (clockRising && transportIsRunning(dtc->transportState)) {
-        // Update step duration estimate (skip first tick — not a real inter-clock interval)
-        if (dtc->stepTime > 0.001f && !dtc->firstTick) {
-            dtc->stepDuration = dtc->stepTime;
-        }
-        dtc->stepTime = 0.0f;
+        int divIdx = clamp(v[kParamClockDiv], 0, NUM_CLOCK_DIV_VALUES - 1);
+        int division = CLOCK_DIV_VALUES[divIdx];
 
-        processClockTick(alg);
+        bool shouldAdvance = false;
+
+        if (dtc->firstTick) {
+            shouldAdvance = true;
+            dtc->clockDivCounter = 0;
+        } else {
+            dtc->clockDivCounter++;
+            if (dtc->clockDivCounter >= division) {
+                dtc->clockDivCounter = 0;
+                shouldAdvance = true;
+            }
+        }
+
+        if (shouldAdvance) {
+            if (dtc->stepTime > 0.001f && !dtc->firstTick) {
+                dtc->stepDuration = dtc->stepTime;
+            }
+            dtc->stepTime = 0.0f;
+            processClockTick(alg);
+        }
     }
 }
 

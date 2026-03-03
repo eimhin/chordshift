@@ -11,7 +11,7 @@
  * Combination rules:
  * - Transpose, Inversion, Rotation, Spread, Strum: additive (global + step)
  * - Reverse: XOR (global ^ step)
- * - Reflect: override (step replaces global if nonzero)
+ * - Reflect, Direction: override (step replaces global if nonzero)
  */
 
 #include "transforms.h"
@@ -324,6 +324,7 @@ void applyTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx, uint32_t&
 
     int normalize = v[kParamNormalize];
     int direction = v[kParamDirection];
+    if (sp.direction() != 0) direction = sp.direction();
     int scaleType = v[kParamScaleType];
 
     // Stage 1: Pitch

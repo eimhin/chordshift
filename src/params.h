@@ -27,6 +27,7 @@ static const char* const directionStrings[] = {"Up", "Down", "Pendulum", "PingPo
 static const char* const velCurveStrings[] = {"Ramp", "Curve", "Peak", "Step", "Random", NULL};
 static const char* const timeCurveStrings[] = {"Off", "Ramp", "Curve", "Peak", "Step", "Random", NULL};
 static const char* const playModeStrings[] = {"Forward", "Reverse", "Pendulum", "Random", NULL};
+static const char* const clockDivStrings[] = {"/1", "/2", "/3", "/4", "/6", "/8", "/12", "/16", NULL};
 // ============================================================================
 // STEP PARAMETER MACRO
 // ============================================================================
@@ -44,7 +45,9 @@ static const char* const playModeStrings[] = {"Forward", "Reverse", "Pendulum", 
     {.name = "Gate", .min = 1, .max = 200, .def = 100, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL}, \
     {.name = "Prob", .min = 0, .max = 100, .def = 100, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL}, \
     {.name = "Reflect", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = reflectStrings}, \
-    {.name = "Repeat", .min = 1, .max = 4, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
+    {.name = "Repeat", .min = 1, .max = 4, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL}, \
+    {.name = "Hold", .min = 1, .max = 8, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL}, \
+    {.name = "Direction", .min = 0, .max = 8, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = directionStrings},
 // clang-format on
 
 // ============================================================================
@@ -100,15 +103,16 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     // Playback (25-26)
     {.name = "Play Mode", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = playModeStrings},
     {.name = "Steps", .min = 1, .max = 8, .def = 8, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
+    {.name = "Clock Div", .min = 0, .max = 7, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = clockDivStrings},
 
-    // Capture (27)
+    // Capture (28)
     {.name = "Capture Norm", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = offOnStrings},
 
-    // Triggers (28-29)
+    // Triggers (29-30)
     {.name = "Clear Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Clear All", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
 
-    // Per-step parameters (30 + 12*8 = 126 total)
+    // Per-step parameters (31 + 14*8 = 143 total)
     STEP_PARAMS  // Step 1
     STEP_PARAMS  // Step 2
     STEP_PARAMS  // Step 3
@@ -147,7 +151,7 @@ static const uint8_t pagePitch[] = {kParamTranspose, kParamReflectMode, kParamSp
 static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNormalize};
 
 // Page 6: Order
-static const uint8_t pageOrder[] = {kParamDirection, kParamReverse, kParamPlayMode, kParamStepCount};
+static const uint8_t pageOrder[] = {kParamDirection, kParamReverse, kParamPlayMode, kParamStepCount, kParamClockDiv};
 
 // Page 7: Articulate
 static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamTimeCurve, kParamTimeDepth};
