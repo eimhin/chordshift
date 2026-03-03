@@ -28,12 +28,15 @@ static const char* const velCurveStrings[] = {"Ramp", "Curve", "Peak", "Step", "
 static const char* const timeCurveStrings[] = {"Off", "Ramp", "Curve", "Peak", "Step", "Random", NULL};
 static const char* const playModeStrings[] = {"Forward", "Reverse", "Pendulum", "Random", NULL};
 static const char* const clockDivStrings[] = {"/1", "/2", "/3", "/4", "/6", "/8", "/12", "/16", NULL};
+static const char* const templateStrings[] = {"Custom", "Note", "Fifth", "Triad", "7th",
+                                              "Sus2", "Sus4", "Shell", "Quartal", "Cluster", NULL};
 // ============================================================================
 // STEP PARAMETER MACRO
 // ============================================================================
 
 // clang-format off
 #define STEP_PARAMS \
+    {.name = "Template", .min = 0, .max = 9, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = templateStrings}, \
     {.name = "Enabled", .min = 0, .max = 1, .def = 1, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings}, \
     {.name = "Transpose", .min = -14, .max = 14, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL}, \
     {.name = "Inversion", .min = -4, .max = 4, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL}, \
@@ -108,11 +111,13 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     // Capture (28)
     {.name = "Capture Norm", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = offOnStrings},
 
-    // Triggers (29-30)
+    // Triggers (29-32)
     {.name = "Clear Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Clear All", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
+    {.name = "Copy Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
+    {.name = "Paste Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
 
-    // Per-step parameters (31 + 14*8 = 143 total)
+    // Per-step parameters (33 + 15*8 = 153 total)
     STEP_PARAMS  // Step 1
     STEP_PARAMS  // Step 2
     STEP_PARAMS  // Step 3
@@ -139,7 +144,7 @@ static const uint8_t pageRouting[] = {kParamRunInput, kParamClockInput};
 static const uint8_t pageScale[] = {kParamScaleRoot, kParamScaleType, kParamOctaveBase};
 
 // Page 2: Record
-static const uint8_t pageRecord[] = {kParamRecord, kParamCurrentStep, kParamMidiInCh, kParamCaptureNorm, kParamClearStep, kParamClearAll};
+static const uint8_t pageRecord[] = {kParamRecord, kParamCurrentStep, kParamMidiInCh, kParamCaptureNorm, kParamClearStep, kParamClearAll, kParamCopyStep, kParamPasteStep};
 
 // Page 3: Output
 static const uint8_t pageOutput[] = {kParamMidiOutCh, kParamDestination, kParamBaseVelocity};

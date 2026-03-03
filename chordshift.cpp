@@ -77,6 +77,9 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
     pThis->activeNoteCount = 0;
     pThis->delayedNoteCount = 0;
 
+    // Initialize clipboard
+    pThis->clipboard.valid = false;
+
     // Seed PRNG
     pThis->randState = NT_getCpuCycleCount();
 
@@ -171,9 +174,13 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
         uint32_t off = NT_parameterOffset();
         NT_setParameterFromAudio(idx, kParamClearStep + off, 0);
         NT_setParameterFromAudio(idx, kParamClearAll + off, 0);
+        NT_setParameterFromAudio(idx, kParamCopyStep + off, 0);
+        NT_setParameterFromAudio(idx, kParamPasteStep + off, 0);
         NT_setParameterFromAudio(idx, kParamRecord + off, 0);
         dtc->lastClearStep = v[kParamClearStep];
         dtc->lastClearAll = v[kParamClearAll];
+        dtc->lastCopyStep = v[kParamCopyStep];
+        dtc->lastPasteStep = v[kParamPasteStep];
         dtc->lastRecord = v[kParamRecord];
         dtc->initialized = true;
     }
@@ -212,6 +219,36 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
             }
         }
         dtc->lastClearAll = (int16_t)clearAll;
+    }
+
+    // Parameter change detection: Copy Step
+    int copyStep = v[kParamCopyStep];
+    if (copyStep != dtc->lastCopyStep) {
+        if (copyStep == 1) {
+            int editStep = clamp(v[kParamCurrentStep] - 1, 0, NUM_STEPS - 1);
+            alg->clipboard.chord = alg->stepStates[editStep].baseChord;
+            for (int i = 0; i < PARAMS_PER_STEP; i++) {
+                alg->clipboard.params[i] = v[stepParam(editStep, i)];
+            }
+            alg->clipboard.valid = true;
+        }
+        dtc->lastCopyStep = (int16_t)copyStep;
+    }
+
+    // Parameter change detection: Paste Step
+    int pasteStep = v[kParamPasteStep];
+    if (pasteStep != dtc->lastPasteStep) {
+        if (pasteStep == 1 && alg->clipboard.valid) {
+            int editStep = clamp(v[kParamCurrentStep] - 1, 0, NUM_STEPS - 1);
+            alg->stepStates[editStep].baseChord = alg->clipboard.chord;
+            alg->stepStates[editStep].lastRendered.count = 0;
+            uint32_t idx = NT_algorithmIndex(self);
+            uint32_t off = NT_parameterOffset();
+            for (int i = 0; i < PARAMS_PER_STEP; i++) {
+                NT_setParameterFromAudio(idx, stepParam(editStep, i) + off, alg->clipboard.params[i]);
+            }
+        }
+        dtc->lastPasteStep = (int16_t)pasteStep;
     }
 
     // Timing and delayed notes

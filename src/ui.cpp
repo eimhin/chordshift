@@ -18,6 +18,46 @@ static const char* const noteNames[] = {"C", "C#", "D", "Eb", "E", "F", "F#", "G
 // STEP GRID
 // ============================================================================
 
+static void drawDegreeGrid(int bx, int by, int boxWidth, const ChordDegrees* chord, int brightness) {
+    static constexpr int SQ = 3;   // square size
+    static constexpr int GAP = 1;  // gap between squares
+    static constexpr int COLS = 6; // max cells per row
+
+    // Find degree range
+    int lo = chord->degrees[0], hi = chord->degrees[0];
+    for (int i = 1; i < chord->count; i++) {
+        if (chord->degrees[i] < lo) lo = chord->degrees[i];
+        if (chord->degrees[i] > hi) hi = chord->degrees[i];
+    }
+    int span = hi - lo + 1;
+    if (span > 18) span = 18;
+
+    // Build presence mask
+    bool present[18] = {};
+    for (int i = 0; i < chord->count; i++) {
+        int idx = chord->degrees[i] - lo;
+        if (idx >= 0 && idx < 18)
+            present[idx] = true;
+    }
+
+    // Calculate grid dimensions for centering
+    int cols = (span < COLS) ? span : COLS;
+    int rows = (span + COLS - 1) / COLS;
+    int gridW = cols * SQ + (cols - 1) * GAP;
+    int gridH = rows * SQ + (rows - 1) * GAP;
+    int ox = bx + (boxWidth - gridW) / 2;
+    int oy = by + (UI_STEP_HEIGHT - gridH) / 2;
+
+    for (int i = 0; i < span; i++) {
+        int col = i % COLS;
+        int row = i / COLS;
+        int x = ox + col * (SQ + GAP);
+        int y = oy + row * (SQ + GAP);
+        int b = present[i] ? brightness : 1;
+        NT_drawShapeI(kNT_rectangle, x, y, x + SQ - 1, y + SQ - 1, b);
+    }
+}
+
 static void drawStepGrid(ChordshiftAlgorithm* alg) {
     Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
@@ -44,9 +84,10 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
         bool isEdit = (s == editStep);
 
         // Background
+        bool hasContent = ss->baseChord.count > 0 || sp.chordTemplate() > 0;
         int fill = 0;
         if (isPlaying) fill = UI_BRIGHTNESS_MED;
-        else if (enabled && ss->baseChord.count > 0) fill = UI_BRIGHTNESS_DIM;
+        else if (enabled && hasContent) fill = UI_BRIGHTNESS_DIM;
 
         if (fill > 0) {
             NT_drawShapeI(kNT_rectangle, x, y, x2, y2, fill);
@@ -61,18 +102,19 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
             }
         }
 
-        // Step number
-        char label[4];
-        label[0] = '1' + s;
-        label[1] = '\0';
+        // Step label (centered in box)
         int textBright = enabled ? UI_BRIGHTNESS_MAX : 2;
-        NT_drawText(x + 2, y + 9, label, textBright, kNT_textLeft, kNT_textNormal);
-
-        // Chord note count
-        if (ss->baseChord.count > 0) {
-            char countStr[4];
-            NT_intToString(countStr, ss->baseChord.count);
-            NT_drawText(x + boxWidth - 8, y + 9, countStr, textBright, kNT_textRight, kNT_textNormal);
+        int cx = x + boxWidth / 2;
+        int tmpl = sp.chordTemplate();
+        if (tmpl > 0) {
+            static const char* const tmplAbbrev[] = {
+                "", "N", "5h", "Tr", "7h", "S2", "S4", "Sh", "Q4", "Cl"
+            };
+            NT_drawText(cx, y + 9, tmplAbbrev[tmpl], textBright, kNT_textCentre, kNT_textNormal);
+        } else if (ss->baseChord.count > 0) {
+            drawDegreeGrid(x, y, boxWidth, &ss->baseChord, textBright);
+        } else {
+            NT_drawText(cx, y + 9, "--", textBright, kNT_textCentre, kNT_textNormal);
         }
 
         // Disabled indicator

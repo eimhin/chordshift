@@ -119,13 +119,16 @@ enum {
     kParamCaptureNorm,
     kParamClearStep,
     kParamClearAll,
+    kParamCopyStep,
+    kParamPasteStep,
 
-    kGlobalParamCount  // = 31
+    kGlobalParamCount  // = 33
 };
 
 // Per-step parameter offsets
 enum {
-    kStepEnabled = 0,
+    kStepTemplate = 0,
+    kStepEnabled,
     kStepTranspose,
     kStepInversion,
     kStepRotation,
@@ -140,7 +143,7 @@ enum {
     kStepHold,
     kStepDirection,
 
-    kStepParamCount  // = 14
+    kStepParamCount  // = 15
 };
 
 // Validate parameter layout matches config constants
@@ -173,6 +176,7 @@ struct StepParams {
         return v[stepParam(step, param)];
     }
 
+    int chordTemplate() const { return raw(kStepTemplate); }
     bool enabled() const { return raw(kStepEnabled) == 1; }
     int transpose() const { return raw(kStepTranspose); }
     int inversion() const { return raw(kStepInversion); }
@@ -218,6 +222,25 @@ struct RenderedChord {
     uint8_t count;
 };
 
+// Chord template definitions (degree-space shapes)
+struct ChordTemplate {
+    int8_t degrees[MAX_CHORD_NOTES];
+    uint8_t count;
+};
+
+static const ChordTemplate CHORD_TEMPLATES[] = {
+    {{},                    0}, // Custom (unused, placeholder)
+    {{0},                   1}, // Note
+    {{0, 4},                2}, // Fifth
+    {{0, 2, 4},             3}, // Triad
+    {{0, 2, 4, 6},          4}, // 7th
+    {{0, 1, 4},             3}, // Sus2
+    {{0, 3, 4},             3}, // Sus4
+    {{0, 2, 6},             3}, // Shell
+    {{0, 3, 6},             3}, // Quartal
+    {{0, 1, 2},             3}, // Cluster
+};
+
 // Per-step runtime state (DRAM)
 struct StepState {
     ChordDegrees baseChord;
@@ -261,6 +284,8 @@ struct Chordshift_DTC {
     int16_t lastRecord;
     int16_t lastClearStep;
     int16_t lastClearAll;
+    int16_t lastCopyStep;
+    int16_t lastPasteStep;
 
     // Capture state (lightweight counters only — buffers live in SRAM)
     uint8_t captureCount;
@@ -285,13 +310,20 @@ static constexpr int UI_BLINK_HALF_PERIOD = 15;
 
 // Step grid layout
 static constexpr int UI_STEP_Y = 10;
-static constexpr int UI_STEP_HEIGHT = 18;
+static constexpr int UI_STEP_HEIGHT = 20;
 static constexpr int UI_STEP_WIDTH = 28;
 static constexpr int UI_STEP_GAP = 2;
 
 // Chord visualization
-static constexpr int UI_CHORD_Y = 32;
+static constexpr int UI_CHORD_Y = 34;
 static constexpr int UI_CHORD_HEIGHT = 28;
+
+// Step clipboard for copy/paste
+struct StepClipboard {
+    ChordDegrees chord;
+    int16_t params[PARAMS_PER_STEP];
+    bool valid;
+};
 
 // Main algorithm structure (SRAM)
 struct ChordshiftAlgorithm : public _NT_algorithm {
@@ -312,6 +344,9 @@ struct ChordshiftAlgorithm : public _NT_algorithm {
     uint8_t pageStepIndices[NUM_STEPS][PARAMS_PER_STEP];
     _NT_parameterPage pageDefs[MAX_PAGES];
     _NT_parameterPages dynamicPages;
+
+    // Clipboard for step copy/paste
+    StepClipboard clipboard;
 
     // Active note counts (for early-exit optimization)
     uint8_t activeNoteCount;

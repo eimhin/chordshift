@@ -175,15 +175,21 @@ void processClockTick(ChordshiftAlgorithm* alg) {
         }
     }
 
-    // Get base chord for this step
+    // Get base chord for this step (template or captured)
     StepState* ss = &alg->stepStates[nextStep];
-    if (ss->baseChord.count == 0) return;  // Empty step
+    int tmpl = sp.chordTemplate();
 
-    // Copy base chord to working buffer
     DegreeBuffer buf;
-    buf.count = ss->baseChord.count;
-    for (int i = 0; i < buf.count; i++) {
-        buf.degrees[i] = ss->baseChord.degrees[i];
+    if (tmpl > 0) {
+        const ChordTemplate& t = CHORD_TEMPLATES[tmpl];
+        buf.count = t.count;
+        for (int i = 0; i < buf.count; i++)
+            buf.degrees[i] = t.degrees[i];
+    } else {
+        if (ss->baseChord.count == 0) return;  // Empty step
+        buf.count = ss->baseChord.count;
+        for (int i = 0; i < buf.count; i++)
+            buf.degrees[i] = ss->baseChord.degrees[i];
     }
 
     // Apply transform pipeline
