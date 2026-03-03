@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - MIDI Utilities
+ * Chordshift - MIDI Utilities
  * Helper functions for MIDI message handling (from midi-looper)
  */
 

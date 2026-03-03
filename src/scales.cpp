@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Scale Data
+ * Chordshift - Scale Data
  * Scale interval tables and lookup data (single definition)
  */
 

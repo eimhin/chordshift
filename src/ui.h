@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Custom UI
+ * Chordshift - Custom UI
  * Drawing functions for the distingNT 256x64 display
  */
 
@@ -7,4 +7,4 @@
 
 #include "types.h"
 
-bool drawUI(MidiChordsAlgorithm* alg);
+bool drawUI(ChordshiftAlgorithm* alg);

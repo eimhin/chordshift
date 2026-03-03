@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Render Pipeline
+ * Chordshift - Render Pipeline
  * Degree -> MIDI conversion + articulation
  */
 

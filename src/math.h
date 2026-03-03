@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Math Utilities
+ * Chordshift - Math Utilities
  * Basic math functions
  */
 

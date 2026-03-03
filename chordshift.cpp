@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - distingNT Plugin
+ * Chordshift - distingNT Plugin
  *
  * Diatonic Transform Chord Sequencer: An 8-step chord sequencer where each
  * step stores a base chord as scale-degree offsets and applies a non-destructive
@@ -35,20 +35,20 @@
 void calculateRequirements(_NT_algorithmRequirements& req, const int32_t* specs) {
     (void)specs;
     req.numParameters = ARRAY_SIZE(parameters);
-    req.sram = sizeof(MidiChordsAlgorithm);
+    req.sram = sizeof(ChordshiftAlgorithm);
     req.dram = sizeof(StepState) * NUM_STEPS;
-    req.dtc = sizeof(MidiChords_DTC);
+    req.dtc = sizeof(Chordshift_DTC);
     req.itc = 0;
 }
 
 _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorithmRequirements& req,
                          const int32_t* specs) {
     (void)specs;
-    MidiChords_DTC* dtc = (MidiChords_DTC*)ptrs.dtc;
+    Chordshift_DTC* dtc = (Chordshift_DTC*)ptrs.dtc;
     StepState* stepStates = (StepState*)ptrs.dram;
 
     // Initialize DTC (memset zeros all fields; only set non-zero values after)
-    memset(dtc, 0, sizeof(MidiChords_DTC));
+    memset(dtc, 0, sizeof(Chordshift_DTC));
     dtc->stepDuration = 0.1f;
 
     // Initialize step states in DRAM
@@ -58,7 +58,7 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
     }
 
     // Construct algorithm in SRAM
-    MidiChordsAlgorithm* pThis = new (ptrs.sram) MidiChordsAlgorithm(dtc, stepStates);
+    ChordshiftAlgorithm* pThis = new (ptrs.sram) ChordshiftAlgorithm(dtc, stepStates);
 
     // Initialize playing notes and capture buffers
     for (int i = 0; i < 128; i++) {
@@ -114,7 +114,7 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
 }
 
 void parameterChanged(_NT_algorithm* self, int p) {
-    MidiChordsAlgorithm* alg = (MidiChordsAlgorithm*)self;
+    ChordshiftAlgorithm* alg = (ChordshiftAlgorithm*)self;
 
     if (p == kParamStepCount) {
         int stepCount = clamp(alg->v[kParamStepCount], 1, NUM_STEPS);
@@ -132,8 +132,8 @@ void parameterChanged(_NT_algorithm* self, int p) {
 // ============================================================================
 
 void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
-    MidiChordsAlgorithm* alg = (MidiChordsAlgorithm*)self;
-    MidiChords_DTC* dtc = alg->dtc;
+    ChordshiftAlgorithm* alg = (ChordshiftAlgorithm*)self;
+    Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
     int numFrames = numFramesBy4 * 4;
@@ -239,8 +239,8 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
 // ============================================================================
 
 void midiMessage(_NT_algorithm* self, uint8_t byte0, uint8_t byte1, uint8_t byte2) {
-    MidiChordsAlgorithm* alg = (MidiChordsAlgorithm*)self;
-    MidiChords_DTC* dtc = alg->dtc;
+    ChordshiftAlgorithm* alg = (ChordshiftAlgorithm*)self;
+    Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
     uint8_t status = byte0 & 0xF0;
@@ -315,15 +315,15 @@ int parameterString(_NT_algorithm* self, int p, int v, char* buff) {
 }
 
 bool draw(_NT_algorithm* self) {
-    MidiChordsAlgorithm* alg = (MidiChordsAlgorithm*)self;
+    ChordshiftAlgorithm* alg = (ChordshiftAlgorithm*)self;
     alg->dtc->drawFrameCount++;
     return drawUI(alg);
 }
 
-void serialise(_NT_algorithm* self, _NT_jsonStream& stream) { serialiseData((MidiChordsAlgorithm*)self, stream); }
+void serialise(_NT_algorithm* self, _NT_jsonStream& stream) { serialiseData((ChordshiftAlgorithm*)self, stream); }
 
 bool deserialise(_NT_algorithm* self, _NT_jsonParse& parse) {
-    return deserialiseData((MidiChordsAlgorithm*)self, parse);
+    return deserialiseData((ChordshiftAlgorithm*)self, parse);
 }
 
 // ============================================================================
@@ -331,8 +331,8 @@ bool deserialise(_NT_algorithm* self, _NT_jsonParse& parse) {
 // ============================================================================
 
 static const _NT_factory factory = {
-    .guid = NT_MULTICHAR('M', 'C', 'h', '1'), // MIDI Chords v1
-    .name = "MIDI Chords",
+    .guid = NT_MULTICHAR('C', 'S', 'h', '1'), // Chordshift v1
+    .name = "Chordshift",
     .description = "8-step diatonic transform chord sequencer",
     .numSpecifications = 0,
     .specifications = NULL,

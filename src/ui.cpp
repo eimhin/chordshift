@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Custom UI
+ * Chordshift - Custom UI
  *
  * 256x64 pixel display:
  * - Row 0-8: Standard param line (returned by draw() returning false)
@@ -18,8 +18,8 @@ static const char* const noteNames[] = {"C", "C#", "D", "Eb", "E", "F", "F#", "G
 // STEP GRID
 // ============================================================================
 
-static void drawStepGrid(MidiChordsAlgorithm* alg) {
-    MidiChords_DTC* dtc = alg->dtc;
+static void drawStepGrid(ChordshiftAlgorithm* alg) {
+    Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
     int stepCount = clamp(v[kParamStepCount], 1, NUM_STEPS);
@@ -88,8 +88,8 @@ static void drawStepGrid(MidiChordsAlgorithm* alg) {
 // CHORD VISUALIZATION
 // ============================================================================
 
-static void drawChordVisualization(MidiChordsAlgorithm* alg) {
-    MidiChords_DTC* dtc = alg->dtc;
+static void drawChordVisualization(ChordshiftAlgorithm* alg) {
+    Chordshift_DTC* dtc = alg->dtc;
     // Show the most recently rendered chord
     int playStep = dtc->currentPlayStep;
     if (playStep >= NUM_STEPS) return;
@@ -128,7 +128,7 @@ static void drawChordVisualization(MidiChordsAlgorithm* alg) {
 // MAIN DRAW
 // ============================================================================
 
-bool drawUI(MidiChordsAlgorithm* alg) {
+bool drawUI(ChordshiftAlgorithm* alg) {
     drawStepGrid(alg);
     drawChordVisualization(alg);
 

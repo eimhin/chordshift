@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Render Pipeline
+ * Chordshift - Render Pipeline
  *
  * Converts transformed DegreeBuffer to RenderedChord:
  * 1. degreeToMidi() for each degree

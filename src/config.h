@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Configuration
+ * Chordshift - Configuration
  * Tunable constants for the diatonic transform chord sequencer
  */
 
@@ -9,9 +9,9 @@
 // DEBUG CONFIGURATION
 // ============================================================================
 
-// #define MIDICHORDS_DEBUG
+// #define CHORDSHIFT_DEBUG
 
-#ifdef MIDICHORDS_DEBUG
+#ifdef CHORDSHIFT_DEBUG
 #define DEBUG_LOG(fmt, ...) NT_logFormat(fmt, ##__VA_ARGS__)
 #else
 #define DEBUG_LOG(fmt, ...) ((void)0)

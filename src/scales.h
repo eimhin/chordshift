@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Scale Engine
+ * Chordshift - Scale Engine
  * Scale interval tables, white-key quantization, and degree-space conversions
  *
  * Extends the midi-looper scales.h with degree-space functions:

@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Types and Constants
+ * Chordshift - Types and Constants
  * Data structures, enums, and state definitions for the chord sequencer
  */
 
@@ -235,7 +235,7 @@ struct DelayedNote {
 };
 
 // DTC — Fast-access global state
-struct MidiChords_DTC {
+struct Chordshift_DTC {
     TransportState transportState;
     bool prevGateHigh;
     bool prevClockHigh;
@@ -283,8 +283,8 @@ static constexpr int UI_CHORD_Y = 32;
 static constexpr int UI_CHORD_HEIGHT = 28;
 
 // Main algorithm structure (SRAM)
-struct MidiChordsAlgorithm : public _NT_algorithm {
-    MidiChords_DTC* dtc;
+struct ChordshiftAlgorithm : public _NT_algorithm {
+    Chordshift_DTC* dtc;
     StepState* stepStates;       // -> DRAM
     PlayingNote playing[128];
     DelayedNote delayedNotes[MAX_DELAYED_NOTES];
@@ -309,6 +309,6 @@ struct MidiChordsAlgorithm : public _NT_algorithm {
     // PRNG state
     uint32_t randState;
 
-    MidiChordsAlgorithm(MidiChords_DTC* dtc_, StepState* stepStates_)
+    ChordshiftAlgorithm(Chordshift_DTC* dtc_, StepState* stepStates_)
         : dtc(dtc_), stepStates(stepStates_) {}
 };

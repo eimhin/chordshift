@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Playback
+ * Chordshift - Playback
  * Transport, step sequencing, and play modes
  */
 
@@ -8,8 +8,8 @@
 #include "types.h"
 
 // Transport control
-void handleTransportStart(MidiChordsAlgorithm* alg);
-void handleTransportStop(MidiChordsAlgorithm* alg);
+void handleTransportStart(ChordshiftAlgorithm* alg);
+void handleTransportStop(ChordshiftAlgorithm* alg);
 
 // Process a clock tick — advance step, apply transforms, render, emit
-void processClockTick(MidiChordsAlgorithm* alg);
+void processClockTick(ChordshiftAlgorithm* alg);

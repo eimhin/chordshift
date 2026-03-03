@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Transform Pipeline
+ * Chordshift - Transform Pipeline
  *
  * Operates on DegreeBuffer in-place. Combines global + per-step parameters.
  *

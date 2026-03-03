@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - MIDI Output
+ * Chordshift - MIDI Output
  *
  * Handles note emission with strum delays, note-off tracking via PlayingNote
  * array, and duration countdown for automatic note-off.
@@ -14,7 +14,7 @@
 // ============================================================================
 
 // Send a single note-on immediately
-static void sendNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity,
+static void sendNoteOn(ChordshiftAlgorithm* alg, uint8_t note, uint8_t velocity,
                        uint16_t gateMs, uint8_t outCh, uint32_t where) {
     // Release any existing note on the same pitch first
     PlayingNote* existing = &alg->playing[note];
@@ -32,7 +32,7 @@ static void sendNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity,
 }
 
 // Schedule a note for delayed playback (strum)
-static bool scheduleDelayedNote(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity,
+static bool scheduleDelayedNote(ChordshiftAlgorithm* alg, uint8_t note, uint8_t velocity,
                                 uint8_t outCh, uint16_t gateMs, uint16_t delayMs, uint32_t where) {
     for (int i = 0; i < MAX_DELAYED_NOTES; i++) {
         DelayedNote* dn = &alg->delayedNotes[i];
@@ -51,7 +51,7 @@ static bool scheduleDelayedNote(MidiChordsAlgorithm* alg, uint8_t note, uint8_t 
     return false;  // Pool full
 }
 
-void emitRenderedChord(MidiChordsAlgorithm* alg, const RenderedChord* chord) {
+void emitRenderedChord(ChordshiftAlgorithm* alg, const RenderedChord* chord) {
     const int16_t* v = alg->v;
     int outCh = v[kParamMidiOutCh];
     uint32_t where = destToWhere(v[kParamDestination]);
@@ -72,14 +72,14 @@ void emitRenderedChord(MidiChordsAlgorithm* alg, const RenderedChord* chord) {
 // ALL NOTES OFF
 // ============================================================================
 
-void sendAllNotesOff(MidiChordsAlgorithm* alg) {
+void sendAllNotesOff(ChordshiftAlgorithm* alg) {
     const int16_t* v = alg->v;
     int outCh = v[kParamMidiOutCh];
     uint32_t where = destToWhere(v[kParamDestination]);
     NT_sendMidi3ByteMessage(where, withChannel(kMidiCC, outCh), 123, 0);
 }
 
-void killAllPlayingNotes(MidiChordsAlgorithm* alg) {
+void killAllPlayingNotes(ChordshiftAlgorithm* alg) {
     if (alg->activeNoteCount > 0) {
         for (int n = 0; n < 128; n++) {
             PlayingNote* pn = &alg->playing[n];
@@ -104,7 +104,7 @@ void killAllPlayingNotes(MidiChordsAlgorithm* alg) {
 // DELAYED NOTE PROCESSING (Strum)
 // ============================================================================
 
-void processDelayedNotes(MidiChordsAlgorithm* alg, int elapsedMs) {
+void processDelayedNotes(ChordshiftAlgorithm* alg, int elapsedMs) {
     if (elapsedMs <= 0 || alg->delayedNoteCount == 0) return;
 
     for (int i = 0; i < MAX_DELAYED_NOTES; i++) {
@@ -126,7 +126,7 @@ void processDelayedNotes(MidiChordsAlgorithm* alg, int elapsedMs) {
 // NOTE DURATION PROCESSING
 // ============================================================================
 
-void processNoteDurations(MidiChordsAlgorithm* alg, int elapsedMs) {
+void processNoteDurations(ChordshiftAlgorithm* alg, int elapsedMs) {
     if (elapsedMs <= 0 || alg->activeNoteCount == 0) return;
 
     for (int n = 0; n < 128; n++) {

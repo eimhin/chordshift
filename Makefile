@@ -1,7 +1,7 @@
-# Makefile for MIDI Chords distingNT Plugin
+# Makefile for Chordshift distingNT Plugin
 
-PLUGIN_NAME = midichords
-SOURCES = midichords.cpp \
+PLUGIN_NAME = chordshift
+SOURCES = chordshift.cpp \
           src/capture.cpp \
           src/transforms.cpp \
           src/render.cpp \

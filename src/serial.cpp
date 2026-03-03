@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Serialization
+ * Chordshift - Serialization
  *
  * JSON format:
  * {
@@ -24,7 +24,7 @@ static const int SERIAL_VERSION = 1;
 // SERIALIZATION
 // ============================================================================
 
-void serialiseData(MidiChordsAlgorithm* alg, _NT_jsonStream& stream) {
+void serialiseData(ChordshiftAlgorithm* alg, _NT_jsonStream& stream) {
     stream.addMemberName("version");
     stream.addNumber(SERIAL_VERSION);
 
@@ -75,7 +75,7 @@ static bool parseStepObject(_NT_jsonParse& parse, StepState* ss) {
     return true;
 }
 
-bool deserialiseData(MidiChordsAlgorithm* alg, _NT_jsonParse& parse) {
+bool deserialiseData(ChordshiftAlgorithm* alg, _NT_jsonParse& parse) {
     int numMembers;
     if (!parse.numberOfObjectMembers(numMembers)) return false;
 

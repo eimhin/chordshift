@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Random Number Generation
+ * Chordshift - Random Number Generation
  * SplitMix32 PRNG implementation (from midi-looper)
  */
 

@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Capture Pipeline
+ * Chordshift - Capture Pipeline
  *
  * When Record=On, incoming MIDI notes are accumulated. On each note-on,
  * snapshot the held notes (capturing latest chord at peak size). When last note released,
@@ -23,8 +23,8 @@
 // CAPTURE NOTE ON
 // ============================================================================
 
-void captureNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity) {
-    MidiChords_DTC* dtc = alg->dtc;
+void captureNoteOn(ChordshiftAlgorithm* alg, uint8_t note, uint8_t velocity) {
+    Chordshift_DTC* dtc = alg->dtc;
 
     // Track held notes (guard against two keys quantizing to same pitch)
     trackHeldNote(alg, note, velocity);
@@ -40,8 +40,8 @@ void captureNoteOn(MidiChordsAlgorithm* alg, uint8_t note, uint8_t velocity) {
 // CAPTURE NOTE OFF — COMMIT CHORD WHEN LAST NOTE RELEASED
 // ============================================================================
 
-void captureNoteOff(MidiChordsAlgorithm* alg, uint8_t note) {
-    MidiChords_DTC* dtc = alg->dtc;
+void captureNoteOff(ChordshiftAlgorithm* alg, uint8_t note) {
+    Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
     untrackHeldNote(alg, note);

@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Playback
+ * Chordshift - Playback
  *
  * Transport follows midi-looper pattern:
  * - Gate rising edge -> start (reset to step 0)
@@ -22,8 +22,8 @@
 
 // Calculate next step based on play mode, skipping disabled steps.
 // Returns 0-based step index, or -1 if no enabled steps.
-static int calculateNextStep(MidiChordsAlgorithm* alg) {
-    MidiChords_DTC* dtc = alg->dtc;
+static int calculateNextStep(ChordshiftAlgorithm* alg) {
+    Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
     int stepCount = clamp(v[kParamStepCount], 1, NUM_STEPS);
@@ -95,8 +95,8 @@ static int calculateNextStep(MidiChordsAlgorithm* alg) {
 // TRANSPORT
 // ============================================================================
 
-void handleTransportStart(MidiChordsAlgorithm* alg) {
-    MidiChords_DTC* dtc = alg->dtc;
+void handleTransportStart(ChordshiftAlgorithm* alg) {
+    Chordshift_DTC* dtc = alg->dtc;
 
     dtc->currentPlayStep = 0;
     dtc->pendulumDir = 0;
@@ -107,8 +107,8 @@ void handleTransportStart(MidiChordsAlgorithm* alg) {
     dtc->transportState = TRANSPORT_RUNNING;
 }
 
-void handleTransportStop(MidiChordsAlgorithm* alg) {
-    MidiChords_DTC* dtc = alg->dtc;
+void handleTransportStop(ChordshiftAlgorithm* alg) {
+    Chordshift_DTC* dtc = alg->dtc;
 
     dtc->transportState = TRANSPORT_STOPPED;
 
@@ -124,8 +124,8 @@ void handleTransportStop(MidiChordsAlgorithm* alg) {
 // CLOCK TICK PROCESSING
 // ============================================================================
 
-void processClockTick(MidiChordsAlgorithm* alg) {
-    MidiChords_DTC* dtc = alg->dtc;
+void processClockTick(ChordshiftAlgorithm* alg) {
+    Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
     // Kill any currently playing notes before new step

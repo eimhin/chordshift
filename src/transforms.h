@@ -1,5 +1,5 @@
 /*
- * MIDI Chords - Transform Pipeline
+ * Chordshift - Transform Pipeline
  * 4-stage degree-space transform pipeline
  */
 
