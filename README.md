@@ -91,6 +91,7 @@ Global pitch transforms — combined additively with per-step values.
 | Reverse   | No, Yes                                                                                          | No      | Reverse the note order                               |
 | Play Mode | Forward, Reverse, Pendulum, Random                                                             | Forward | Step sequencer direction                             |
 | Steps     | 1 – 8                                                                                             | 8       | Number of active steps                               |
+| Clock Div | /1, /2, /3, /4, /6, /8, /12, /16                                                              | /1      | Divide incoming clock before step advance             |
 
 ### Articulate
 
@@ -106,20 +107,22 @@ Global pitch transforms — combined additively with per-step values.
 
 Each step has its own set of transforms that combine with the global values.
 
-| Parameter | Range                         | Default | Combination                                 |
-| --------- | ----------------------------- | ------- | ------------------------------------------- |
-| Enabled   | No, Yes                      | Yes     | —                                           |
-| Transpose | -14 – +14                     | 0       | Additive (global + step)                    |
-| Inversion | -4 – +4                       | 0       | Additive                                    |
-| Rotation  | -7 – +7                       | 0       | Additive                                    |
-| Spread    | -7 – +7                       | 0       | Additive                                    |
-| Reverse   | No, Yes                      | No      | XOR (global ^ step)                         |
-| Strum     | 0 – 100 ms                    | 0       | Additive                                    |
-| Velocity  | -64 – +64                     | 0       | Offset from base velocity                   |
-| Gate      | 1 – 200%                      | 100     | Gate length as percentage of step duration  |
-| Prob      | 0 – 100%                      | 100     | Probability the step plays                  |
-| Reflect   | Off, Root, Lowest, Highest | Off     | Overrides global if nonzero                 |
-| Repeat    | 1 – 4                         | 1       | Ratchet — repeat the chord N times per step |
+| Parameter | Range                                                                       | Default | Combination                                          |
+| --------- | --------------------------------------------------------------------------- | ------- | ---------------------------------------------------- |
+| Enabled   | No, Yes                                                                     | Yes     | —                                                    |
+| Transpose | -14 – +14                                                                   | 0       | Additive (global + step)                             |
+| Inversion | -4 – +4                                                                     | 0       | Additive                                             |
+| Rotation  | -7 – +7                                                                     | 0       | Additive                                             |
+| Spread    | -7 – +7                                                                     | 0       | Additive                                             |
+| Reverse   | No, Yes                                                                     | No      | XOR (global ^ step)                                  |
+| Strum     | 0 – 100 ms                                                                  | 0       | Additive                                             |
+| Velocity  | -64 – +64                                                                   | 0       | Offset from base velocity                            |
+| Gate      | 1 – 200%                                                                    | 100     | Gate length as percentage of step duration            |
+| Prob      | 0 – 100%                                                                    | 100     | Probability the step plays                           |
+| Reflect   | Off, Root, Lowest, Highest                                                  | Off     | Overrides global if nonzero                          |
+| Repeat    | 1 – 4                                                                       | 1       | Ratchet — repeat the chord N times per step          |
+| Hold      | 1 – 8                                                                       | 1       | Hold step for N clock ticks, scaling gate duration    |
+| Direction | Up, Down, Pendulum, PingPong, Diverge, Converge, Random, Pedal Lo, Pedal Hi | Up      | Overrides global direction if nonzero                |
 
 ## How Capture Works
 
