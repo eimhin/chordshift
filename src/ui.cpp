@@ -83,14 +83,9 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
         bool isPlaying = transportIsRunning(dtc->transportState) && (s == dtc->currentPlayStep);
         bool isEdit = (s == editStep);
 
-        // Background
-        bool hasContent = ss->baseChord.count > 0 || sp.chordTemplate() > 0;
-        int fill = 0;
-        if (isPlaying) fill = UI_BRIGHTNESS_MED;
-        else if (enabled && hasContent) fill = UI_BRIGHTNESS_DIM;
-
-        if (fill > 0) {
-            NT_drawShapeI(kNT_rectangle, x, y, x2, y2, fill);
+        // Background (playing step only)
+        if (isPlaying) {
+            NT_drawShapeI(kNT_rectangle, x, y, x2, y2, UI_BRIGHTNESS_LOW);
         }
 
         // Edit step outline (blinks when recording)
@@ -110,11 +105,13 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
             static const char* const tmplAbbrev[] = {
                 "", "N", "5h", "Tr", "7h", "S2", "S4", "Sh", "Q4", "Cl"
             };
-            NT_drawText(cx, y + 9, tmplAbbrev[tmpl], textBright, kNT_textCentre, kNT_textNormal);
+            int textY = y + (UI_STEP_HEIGHT + UI_FONT_NORMAL_ASCENT) / 2;
+            NT_drawText(cx, textY, tmplAbbrev[tmpl], textBright, kNT_textCentre, kNT_textNormal);
         } else if (ss->baseChord.count > 0) {
             drawDegreeGrid(x, y, boxWidth, &ss->baseChord, textBright);
         } else {
-            NT_drawText(cx, y + 9, "--", textBright, kNT_textCentre, kNT_textNormal);
+            int textY = y + (UI_STEP_HEIGHT + UI_FONT_NORMAL_ASCENT) / 2;
+            NT_drawText(cx, textY, "--", textBright, kNT_textCentre, kNT_textNormal);
         }
 
         // Disabled indicator
@@ -151,17 +148,18 @@ static void drawChordVisualization(ChordshiftAlgorithm* alg) {
         RenderedNote* rn = &rc->notes[i];
 
         // Velocity bar
-        int barHeight = (rn->velocity * 28) / 127;
+        int barHeight = (rn->velocity * UI_BAR_MAX_HEIGHT) / 127;
         if (barHeight < 1) barHeight = 1;
-        int barY = y + 28 - barHeight;
+        int barY = y + UI_BAR_MAX_HEIGHT - barHeight;
 
-        int brightness = transportIsRunning(dtc->transportState) ? UI_BRIGHTNESS_MAX : UI_BRIGHTNESS_DIM;
-        NT_drawShapeI(kNT_rectangle, x, barY, x + barWidth - 1, y + 28, brightness);
+        int brightness = transportIsRunning(dtc->transportState) ? UI_BRIGHTNESS_MED : UI_BRIGHTNESS_DIM;
+        NT_drawShapeI(kNT_rectangle, x, barY, x + barWidth - 1, y + UI_BAR_MAX_HEIGHT - 1, brightness);
 
         // Note name below bar
         if (barWidth >= 8) {
             int noteIdx = rn->midiNote % 12;
-            NT_drawText(x + 1, y + 30, noteNames[noteIdx], UI_BRIGHTNESS_MED, kNT_textLeft, kNT_textNormal);
+            NT_drawText(x + barWidth / 2, y + UI_BAR_MAX_HEIGHT + UI_FONT_NORMAL_ASCENT + 1,
+                        noteNames[noteIdx], UI_BRIGHTNESS_MED, kNT_textCentre, kNT_textNormal);
         }
     }
 }

@@ -303,6 +303,7 @@ struct Chordshift_DTC {
 static constexpr int UI_LEFT_MARGIN = 2;
 static constexpr int UI_BRIGHTNESS_MAX = 15;
 static constexpr int UI_BRIGHTNESS_DIM = 1;
+static constexpr int UI_BRIGHTNESS_LOW = 3;
 static constexpr int UI_BRIGHTNESS_MED = 6;
 
 // Blink timing
@@ -313,10 +314,11 @@ static constexpr int UI_STEP_Y = 10;
 static constexpr int UI_STEP_HEIGHT = 20;
 static constexpr int UI_STEP_WIDTH = 28;
 static constexpr int UI_STEP_GAP = 2;
+static constexpr int UI_FONT_NORMAL_ASCENT = 9;  // kNT_textNormal baseline to top
 
 // Chord visualization
 static constexpr int UI_CHORD_Y = 34;
-static constexpr int UI_CHORD_HEIGHT = 28;
+static constexpr int UI_BAR_MAX_HEIGHT = 19;
 
 // Step clipboard for copy/paste
 struct StepClipboard {
