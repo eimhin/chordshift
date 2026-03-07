@@ -30,12 +30,16 @@ The display shows a step grid (top) and a velocity/note visualization of the cur
 
 ## Parameter Pages
 
-### Routing
+### Setup
 
-| Parameter | Range    | Description                         |
-| --------- | -------- | ----------------------------------- |
-| Run       | CV input | Gate input for transport start/stop |
-| Clock     | CV input | Trigger input for step advance      |
+| Parameter   | Range                                       | Default  | Description                         |
+| ----------- | ------------------------------------------- | -------- | ----------------------------------- |
+| Run         | CV input                                    |          | Gate input for transport start/stop |
+| Clock       | CV input                                    |          | Trigger input for step advance      |
+| MIDI In Ch  | All, 1–16                                   | 1        | MIDI input channel filter           |
+| MIDI Out Ch | 1 – 16                                      | 1        | MIDI output channel                 |
+| Destination | Breakout, SelectBus, USB, Internal, All     | Internal | MIDI output routing                 |
+| Velocity    | 1 – 127                                     | 100      | Base velocity for output notes      |
 
 ### Scale
 
@@ -51,20 +55,19 @@ The display shows a step grid (top) and a velocity/note visualization of the cur
 | ------------ | ---------- | ------- | ------------------------------------------------------------- |
 | Record       | Off, On   | Off     | Enable chord capture from MIDI input                          |
 | Edit Step    | 1 – 8      | 1       | Which step to record into (auto-advances after capture)       |
-| MIDI In Ch   | All, 1–16 | 1       | MIDI input channel filter                                     |
 | Capture Norm | Off, On   | Off     | Normalize captured chords so the lowest note becomes degree 0 |
 | Clear Step   | No, Yes   | No      | Clear the current edit step                                   |
 | Clear All    | No, Yes   | No      | Clear all steps                                               |
 | Copy Step    | No, Yes   | No      | Copy current edit step to clipboard                           |
 | Paste Step   | No, Yes   | No      | Paste clipboard to current edit step                          |
 
-### Output
+### Playback
 
-| Parameter   | Range                                       | Default  | Description                    |
-| ----------- | ------------------------------------------- | -------- | ------------------------------ |
-| MIDI Out Ch | 1 – 16                                      | 1        | MIDI output channel            |
-| Destination | Breakout, SelectBus, USB, Internal, All | Internal | MIDI output routing            |
-| Velocity    | 1 – 127                                     | 100      | Base velocity for output notes |
+| Parameter | Range                            | Default | Description                                  |
+| --------- | -------------------------------- | ------- | -------------------------------------------- |
+| Play Mode | Forward, Reverse, Pendulum, Random | Forward | Step sequencer direction                     |
+| Steps     | 1 – 8                           | 8       | Number of active steps                       |
+| Clock Div | /1, /2, /3, /4, /6, /8, /12, /16 | /1     | Divide incoming clock before step advance    |
 
 ### Pitch
 
@@ -81,19 +84,11 @@ Global pitch transforms — combined additively with per-step values.
 
 | Parameter | Range                     | Default | Description                          |
 | --------- | ------------------------- | ------- | ------------------------------------ |
-| Inversion | -4 – +4                   | 0       | Move bottom/top notes across octaves |
-| Rotation  | -7 – +7                   | 0       | Rotate the note order cyclically     |
-| Normalize | None, Lowest=0, First=0 | None    | Re-center degrees after transforms   |
-
-### Order
-
-| Parameter | Range                                                                                             | Default | Description                                          |
-| --------- | ------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------------------- |
-| Direction | Up, Down, Pendulum, PingPong, Diverge, Converge, Random, Pedal Lo, Pedal Hi | Up | Note playback order within the chord (affects strum) |
-| Reverse   | No, Yes                                                                                          | No      | Reverse the note order                               |
-| Play Mode | Forward, Reverse, Pendulum, Random                                                             | Forward | Step sequencer direction                             |
-| Steps     | 1 – 8                                                                                             | 8       | Number of active steps                               |
-| Clock Div | /1, /2, /3, /4, /6, /8, /12, /16                                                              | /1      | Divide incoming clock before step advance             |
+| Inversion | -4 – +4                                                                     | 0       | Move bottom/top notes across octaves                 |
+| Rotation  | -7 – +7                                                                     | 0       | Rotate the note order cyclically                     |
+| Normalize | None, Lowest=0, First=0                                                     | None    | Re-center degrees after transforms                   |
+| Direction | Up, Down, Pendulum, PingPong, Diverge, Converge, Random, Pedal Lo, Pedal Hi | Up      | Note playback order within the chord (affects strum) |
+| Reverse   | No, Yes                                                                     | No      | Reverse the note order                               |
 
 ### Articulate
 
