@@ -111,6 +111,7 @@ enum {
     kParamStrumTime,
     kParamVelCurve,
     kParamVelDepth,
+    kParamVelDeviation,
     kParamTimeCurve,
     kParamTimeDepth,
     kParamPlayMode,
@@ -136,7 +137,7 @@ enum {
     kParamRandGate,
     kParamRandRepeat,
 
-    kGlobalParamCount  // = 47
+    kGlobalParamCount  // = 48
 };
 
 // Per-step parameter offsets

@@ -102,7 +102,6 @@ void randomizeSequence(uint32_t& randState, const int16_t* v,
     // Sequence length randomization (Steps, ClockDiv, Hold)
     randomizeSequenceLength(randState, v, idx, off);
 
-    int dTemplate  = clamp(v[kParamRandTemplate],  0, 100);
     int dTranspose = clamp(v[kParamRandTranspose], 0, 100);
     int dInversion = clamp(v[kParamRandInversion], 0, 100);
     int dRotation  = clamp(v[kParamRandRotation],  0, 100);
@@ -112,10 +111,26 @@ void randomizeSequence(uint32_t& randState, const int16_t* v,
     int dRepeat    = clamp(v[kParamRandRepeat],    0, 100);
 
     for (int s = 0; s < NUM_STEPS; s++) {
-        // Template
-        if (dTemplate > 0) {
-            int tmpl = randRange(randState, 3, 4);
-            NT_setParameterFromAudio(idx, stepParam(s, kStepTemplate) + off, tmpl);
+        // Template selection lookup: each entry is {values[], count}
+        static const int tmplSets[][3] = {
+            {2, 0, 0},    // 1: 5th
+            {3, 0, 0},    // 2: Triad
+            {4, 0, 0},    // 3: 7th
+            {2, 3, 0},    // 4: 5th+Triad
+            {2, 4, 0},    // 5: 5th+7th
+            {3, 4, 0},    // 6: Triad+7th
+            {2, 3, 4},    // 7: 5th+Triad+7th
+        };
+        static const int tmplCounts[] = {1, 1, 1, 2, 2, 2, 3};
+
+        int tmplEnum = v[kParamRandTemplate];
+        if (tmplEnum == 0) {
+            // Off: fixed Triad
+            NT_setParameterFromAudio(idx, stepParam(s, kStepTemplate) + off, 3);
+        } else {
+            int idx2 = tmplEnum - 1;
+            int pick = tmplSets[idx2][randRange(randState, 0, tmplCounts[idx2] - 1)];
+            NT_setParameterFromAudio(idx, stepParam(s, kStepTemplate) + off, pick);
         }
 
         // Transpose: contour-controlled, range scaled by depth
@@ -153,11 +168,15 @@ void randomizeSequence(uint32_t& randState, const int16_t* v,
                                      randRange(randState, -rotRange, rotRange));
         }
 
-        // Spread
+        // Spread: pick from consonant values only
         if (dSpread > 0) {
-            int sprRange = (7 * dSpread + 50) / 100;
+            static const int spreadValues[] = {0, 2, -5, 5};
+            static const int numSpreadValues = 4;
+            int maxIdx = (numSpreadValues * dSpread + 50) / 100;
+            if (maxIdx < 1) maxIdx = 1;
+            if (maxIdx > numSpreadValues) maxIdx = numSpreadValues;
             NT_setParameterFromAudio(idx, stepParam(s, kStepSpread) + off,
-                                     randRange(randState, -sprRange, sprRange));
+                                     spreadValues[randRange(randState, 0, maxIdx - 1)]);
         }
 
         // Reverse: depth as probability

@@ -93,6 +93,7 @@ void renderChord(RenderedChord* out, const DegreeBuffer* buf, const int16_t* v,
     int baseVelocity = v[kParamBaseVelocity];
     int velCurve = v[kParamVelCurve];
     int velDepth = v[kParamVelDepth];
+    int velDeviation = v[kParamVelDeviation];
     int strumTime = v[kParamStrumTime] + sp.strumTime();  // additive
     int timeCurve = v[kParamTimeCurve];
     int timeDepth = v[kParamTimeDepth];
@@ -122,6 +123,10 @@ void renderChord(RenderedChord* out, const DegreeBuffer* buf, const int16_t* v,
             // Calculate velocity
             int vel = baseVelocity + velOffset;
             vel += velocityCurveOffset(i, buf->count, velCurve, velDepth, randState);
+            if (velDeviation > 0) {
+                int maxDev = (vel * velDeviation + 50) / 100;
+                vel += randRange(randState, -maxDev, maxDev);
+            }
             vel = clamp(vel, 1, 127);
 
             // Calculate strum delay with time curve

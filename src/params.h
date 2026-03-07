@@ -34,6 +34,7 @@ static const char* const contourStrings[] = {"Random", "Arc", "Rise", "Fall", NU
 static const char* const seqLenStrings[] = {"None", "8", "16", "32", "64", "128", "256", NULL};
 static const char* const seqDivStrings[] = {"None", "1", "2", "4", "8", "16", "32", NULL};
 static const char* const seqHoldStrings[] = {"Varied", "Uniform", NULL};
+static const char* const randTemplateStrings[] = {"Off", "5th", "Triad", "7th", "5th+Tri", "5th+7th", "Tri+7th", "All", NULL};
 // ============================================================================
 // STEP PARAMETER MACRO
 // ============================================================================
@@ -81,7 +82,7 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     // Scale (8-10)
     {.name = "Root", .min = 0, .max = 11, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleRootStrings},
     {.name = "Scale", .min = 0, .max = 10, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleTypeStrings},
-    {.name = "Octave", .min = 1, .max = 7, .def = 3, .unit = kNT_unitHasStrings, .scaling = 0, .enumStrings = NULL},
+    {.name = "Octave", .min = 1, .max = 8, .def = 6, .unit = kNT_unitHasStrings, .scaling = 0, .enumStrings = NULL},
 
     // Pitch transforms (11-14)
     {.name = "Transpose", .min = -14, .max = 14, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
@@ -98,16 +99,17 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Direction", .min = 0, .max = 8, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = directionStrings},
     {.name = "Reverse", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
 
-    // Articulation (20-22)
+    // Articulation (20-23)
     {.name = "Strum", .min = 0, .max = 100, .def = 0, .unit = kNT_unitMs, .scaling = 0, .enumStrings = NULL},
     {.name = "Vel Shape", .min = 0, .max = 4, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = velCurveStrings},
     {.name = "Vel Depth", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Vel Deviation", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
-    // Time curve (23-24)
+    // Time curve (24-25)
     {.name = "Time Shape", .min = 0, .max = 5, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = timeCurveStrings},
     {.name = "Time Depth", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
-    // Playback (25-26)
+    // Playback (26-28)
     {.name = "Play Mode", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = playModeStrings},
     {.name = "Steps", .min = 1, .max = 8, .def = 8, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Clock Div", .min = 0, .max = 7, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = clockDivStrings},
@@ -125,12 +127,12 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     // Randomize (34-46)
     {.name = "Contour", .min = 0, .max = 3, .def = 1, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = contourStrings},
     {.name = "Randomize", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
-    {.name = "Seq Length", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqLenStrings},
-    {.name = "Seq Div", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqDivStrings},
+    {.name = "Seq Length", .min = 0, .max = 6, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqLenStrings},
+    {.name = "Seq Div", .min = 0, .max = 6, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqDivStrings},
     {.name = "Seq Hold", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqHoldStrings},
-    {.name = "Template %", .min = 0, .max = 100, .def = 50, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
-    {.name = "Transpose %", .min = 0, .max = 100, .def = 50, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
-    {.name = "Inversion %", .min = 0, .max = 100, .def = 38, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Template", .min = 0, .max = 7, .def = 6, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = randTemplateStrings},
+    {.name = "Transpose %", .min = 0, .max = 100, .def = 40, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Inversion %", .min = 0, .max = 100, .def = 25, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Rotation %", .min = 0, .max = 100, .def = 10, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Spread %", .min = 0, .max = 100, .def = 10, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Reverse %", .min = 0, .max = 100, .def = 25, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
@@ -176,7 +178,7 @@ static const uint8_t pagePitch[] = {kParamTranspose, kParamReflectMode, kParamSp
 static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNormalize, kParamDirection, kParamReverse};
 
 // Page 6: Articulate
-static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamTimeCurve, kParamTimeDepth};
+static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamVelDeviation, kParamTimeCurve, kParamTimeDepth};
 
 // Page 7: Randomize
 static const uint8_t pageRandomize[] = {
