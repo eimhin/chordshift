@@ -14,3 +14,8 @@ static inline int clamp(int x, int lo, int hi) {
     if (x > hi) return hi;
     return x;
 }
+
+static inline int gcd(int a, int b) {
+    while (b) { int t = b; b = a % b; a = t; }
+    return a;
+}

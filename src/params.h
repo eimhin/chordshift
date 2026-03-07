@@ -31,6 +31,9 @@ static const char* const clockDivStrings[] = {"/1", "/2", "/3", "/4", "/6", "/8"
 static const char* const templateStrings[] = {"Custom", "Note", "Fifth", "Triad", "7th",
                                               "Sus2", "Sus4", "Shell", "Quartal", "Cluster", NULL};
 static const char* const contourStrings[] = {"Random", "Arc", "Rise", "Fall", NULL};
+static const char* const seqLenStrings[] = {"None", "8", "16", "32", "64", "128", "256", NULL};
+static const char* const seqDivStrings[] = {"None", "1", "2", "4", "8", "16", "32", NULL};
+static const char* const seqHoldStrings[] = {"Varied", "Uniform", NULL};
 // ============================================================================
 // STEP PARAMETER MACRO
 // ============================================================================
@@ -119,12 +122,22 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Paste Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Reset All", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
 
-    // Randomize (34-36)
+    // Randomize (34-46)
     {.name = "Contour", .min = 0, .max = 3, .def = 1, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = contourStrings},
-    {.name = "Depth", .min = 0, .max = 100, .def = 50, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Randomize", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
+    {.name = "Seq Length", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqLenStrings},
+    {.name = "Seq Div", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqDivStrings},
+    {.name = "Seq Hold", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqHoldStrings},
+    {.name = "Template %", .min = 0, .max = 100, .def = 50, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Transpose %", .min = 0, .max = 100, .def = 50, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Inversion %", .min = 0, .max = 100, .def = 38, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Rotation %", .min = 0, .max = 100, .def = 10, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Spread %", .min = 0, .max = 100, .def = 10, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Reverse %", .min = 0, .max = 100, .def = 25, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Gate %", .min = 0, .max = 100, .def = 25, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Repeat %", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
-    // Per-step parameters (37 + 15*8 = 157 total)
+    // Per-step parameters (47 + 15*8 = 167 total)
     STEP_PARAMS  // Step 1
     STEP_PARAMS  // Step 2
     STEP_PARAMS  // Step 3
@@ -166,7 +179,13 @@ static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNor
 static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamTimeCurve, kParamTimeDepth};
 
 // Page 7: Randomize
-static const uint8_t pageRandomize[] = {kParamRandomContour, kParamRandomDepth, kParamRandomize};
+static const uint8_t pageRandomize[] = {
+    kParamRandomContour, kParamRandomize,
+    kParamRandSeqLen, kParamRandSeqDiv, kParamRandSeqHold,
+    kParamRandTemplate, kParamRandTranspose,
+    kParamRandInversion, kParamRandRotation, kParamRandSpread,
+    kParamRandReverse, kParamRandGate, kParamRandRepeat
+};
 
 // ============================================================================
 // DYNAMIC PAGE BUILDING

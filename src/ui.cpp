@@ -9,29 +9,30 @@
 #include "ui.h"
 #include "math.h"
 #include "scales.h"
+#include "transforms.h"
 
 // ============================================================================
 // STEP GRID
 // ============================================================================
 
-static void drawDegreeGrid(int bx, int by, int boxWidth, const ChordDegrees* chord, int brightness) {
+static void drawDegreeGrid(int bx, int by, int boxWidth, const DegreeBuffer* buf, int brightness) {
     static constexpr int SQ = 4;   // square size
     static constexpr int GAP = 2;  // gap between squares
     static constexpr int V_MAX_COLS = 2; // max columns in vertical layout
 
     // Find degree range
-    int lo = chord->degrees[0], hi = chord->degrees[0];
-    for (int i = 1; i < chord->count; i++) {
-        if (chord->degrees[i] < lo) lo = chord->degrees[i];
-        if (chord->degrees[i] > hi) hi = chord->degrees[i];
+    int lo = buf->degrees[0], hi = buf->degrees[0];
+    for (int i = 1; i < buf->count; i++) {
+        if (buf->degrees[i] < lo) lo = buf->degrees[i];
+        if (buf->degrees[i] > hi) hi = buf->degrees[i];
     }
     int span = hi - lo + 1;
     if (span > 15) span = 15;
 
     // Build presence mask
     bool present[15] = {};
-    for (int i = 0; i < chord->count; i++) {
-        int idx = chord->degrees[i] - lo;
+    for (int i = 0; i < buf->count; i++) {
+        int idx = buf->degrees[i] - lo;
         if (idx >= 0 && idx < 15)
             present[idx] = true;
     }
@@ -110,16 +111,49 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
         // Step label (centered in box)
         int textBright = enabled ? UI_BRIGHTNESS_MAX : 2;
         int cx = x + (boxWidth + 1) / 2;
+        DegreeBuffer buf;
+        buf.count = 0;
+
         int tmpl = sp.chordTemplate();
         if (tmpl > 0) {
             const ChordTemplate& t = CHORD_TEMPLATES[tmpl];
-            ChordDegrees tmplChord;
-            tmplChord.count = t.count;
+            buf.count = t.count;
             for (int i = 0; i < t.count; i++)
-                tmplChord.degrees[i] = t.degrees[i];
-            drawDegreeGrid(x, y, boxWidth, &tmplChord, textBright);
+                buf.degrees[i] = t.degrees[i];
         } else if (ss->baseChord.count > 0) {
-            drawDegreeGrid(x, y, boxWidth, &ss->baseChord, textBright);
+            buf.count = ss->baseChord.count;
+            for (int i = 0; i < buf.count; i++)
+                buf.degrees[i] = ss->baseChord.degrees[i];
+        }
+
+        if (buf.count > 0) {
+            applyPitchTransforms(&buf, v, s);
+
+            // Show transpose offset (lower right)
+            int trans = v[kParamTranspose] + sp.transpose();
+            if (trans != 0) {
+                char numBuf[8];
+                int len = 0;
+                if (trans > 0) numBuf[len++] = '+';
+                else numBuf[len++] = '-';
+                int a = trans < 0 ? -trans : trans;
+                if (a >= 10) numBuf[len++] = '0' + (a / 10);
+                numBuf[len++] = '0' + (a % 10);
+                numBuf[len] = '\0';
+                NT_drawText(x + boxWidth - 2, y2 - 2, numBuf, textBright / 2, kNT_textRight, kNT_textTiny);
+            }
+
+            // Show hold value (lower left)
+            int hold = sp.hold();
+            if (hold > 1) {
+                char holdBuf[4];
+                holdBuf[0] = 'x';
+                holdBuf[1] = '0' + hold;
+                holdBuf[2] = '\0';
+                NT_drawText(x + 2, y2 - 2, holdBuf, textBright / 2, kNT_textLeft, kNT_textTiny);
+            }
+
+            drawDegreeGrid(x, y, boxWidth, &buf, textBright);
         } else {
             int textY = y + (UI_STEP_HEIGHT + UI_FONT_NORMAL_ASCENT) / 2;
             NT_drawText(cx, textY, "--", UI_BRIGHTNESS_LOW, kNT_textCentre, kNT_textNormal);

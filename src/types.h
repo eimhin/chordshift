@@ -123,10 +123,20 @@ enum {
     kParamPasteStep,
     kParamResetAll,
     kParamRandomContour,
-    kParamRandomDepth,
     kParamRandomize,
+    kParamRandSeqLen,
+    kParamRandSeqDiv,
+    kParamRandSeqHold,
+    kParamRandTemplate,
+    kParamRandTranspose,
+    kParamRandInversion,
+    kParamRandRotation,
+    kParamRandSpread,
+    kParamRandReverse,
+    kParamRandGate,
+    kParamRandRepeat,
 
-    kGlobalParamCount  // = 37
+    kGlobalParamCount  // = 47
 };
 
 // Per-step parameter offsets

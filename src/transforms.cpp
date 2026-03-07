@@ -303,6 +303,29 @@ static void applyDirection(DegreeBuffer* buf, int dir, uint32_t& randState) {
 // FULL PIPELINE
 // ============================================================================
 
+void applyPitchTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx) {
+    if (buf->count == 0) return;
+
+    StepParams sp = StepParams::fromAlgorithm(v, stepIdx);
+
+    int transpose = v[kParamTranspose] + sp.transpose();
+    int inversion = v[kParamInversion] + sp.inversion();
+    int spread = v[kParamSpreadAmount] + sp.spread();
+    int anchor = v[kParamSpreadAnchor];
+
+    int reflect = v[kParamReflectMode];
+    if (sp.reflect() != 0) reflect = sp.reflect();
+
+    int normalize = v[kParamNormalize];
+    int scaleType = v[kParamScaleType];
+
+    applyTranspose(buf, transpose);
+    applyReflect(buf, reflect);
+    applySpread(buf, spread, anchor);
+    applyInversion(buf, inversion, scaleType);
+    applyNormalize(buf, normalize);
+}
+
 void applyTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx, uint32_t& randState) {
     if (buf->count == 0) return;
 

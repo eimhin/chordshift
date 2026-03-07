@@ -10,3 +10,7 @@
 // Apply the full transform pipeline to a DegreeBuffer.
 // Combines global params (from v[]) with per-step params.
 void applyTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx, uint32_t& randState);
+
+// Apply only pitch-content transforms (no rotation, reverse, direction).
+// Used by UI to preview chord shape + position without ordering effects.
+void applyPitchTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx);
