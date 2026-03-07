@@ -137,28 +137,25 @@ static_assert(MAX_TOTAL_PARAMS == ARRAY_SIZE(parameters),
 // PARAMETER PAGES
 // ============================================================================
 
-// Page 0: Routing
-static const uint8_t pageRouting[] = {kParamRunInput, kParamClockInput};
+// Page 0: Setup
+static const uint8_t pageSetup[] = {kParamRunInput, kParamClockInput, kParamMidiInCh, kParamMidiOutCh, kParamDestination, kParamBaseVelocity};
 
 // Page 1: Scale
 static const uint8_t pageScale[] = {kParamScaleRoot, kParamScaleType, kParamOctaveBase};
 
 // Page 2: Record
-static const uint8_t pageRecord[] = {kParamRecord, kParamCurrentStep, kParamMidiInCh, kParamCaptureNorm, kParamClearStep, kParamClearAll, kParamCopyStep, kParamPasteStep};
+static const uint8_t pageRecord[] = {kParamRecord, kParamCurrentStep, kParamCaptureNorm, kParamClearStep, kParamClearAll, kParamCopyStep, kParamPasteStep};
 
-// Page 3: Output
-static const uint8_t pageOutput[] = {kParamMidiOutCh, kParamDestination, kParamBaseVelocity};
+// Page 3: Playback
+static const uint8_t pagePlayback[] = {kParamPlayMode, kParamStepCount, kParamClockDiv};
 
 // Page 4: Pitch
 static const uint8_t pagePitch[] = {kParamTranspose, kParamReflectMode, kParamSpreadAmount, kParamSpreadAnchor};
 
 // Page 5: Voicing
-static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNormalize};
+static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNormalize, kParamDirection, kParamReverse};
 
-// Page 6: Order
-static const uint8_t pageOrder[] = {kParamDirection, kParamReverse, kParamPlayMode, kParamStepCount, kParamClockDiv};
-
-// Page 7: Articulate
+// Page 6: Articulate
 static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamTimeCurve, kParamTimeDepth};
 
 // ============================================================================
@@ -172,17 +169,16 @@ struct GlobalPageInfo {
 };
 
 static const GlobalPageInfo globalPages[] = {
-    {"Routing",    pageRouting,    ARRAY_SIZE(pageRouting)},
+    {"Setup",      pageSetup,      ARRAY_SIZE(pageSetup)},
     {"Scale",      pageScale,      ARRAY_SIZE(pageScale)},
     {"Record",     pageRecord,     ARRAY_SIZE(pageRecord)},
-    {"Output",     pageOutput,     ARRAY_SIZE(pageOutput)},
+    {"Playback",   pagePlayback,   ARRAY_SIZE(pagePlayback)},
     {"Pitch",      pagePitch,      ARRAY_SIZE(pagePitch)},
     {"Voicing",    pageVoicing,    ARRAY_SIZE(pageVoicing)},
-    {"Order",      pageOrder,      ARRAY_SIZE(pageOrder)},
     {"Articulate", pageArticulate, ARRAY_SIZE(pageArticulate)},
 };
 
-static constexpr int NUM_GLOBAL_PAGES = 8;
+static constexpr int NUM_GLOBAL_PAGES = 7;
 static_assert(sizeof(globalPages) / sizeof(globalPages[0]) == NUM_GLOBAL_PAGES,
               "globalPages[] size must match NUM_GLOBAL_PAGES");
 
