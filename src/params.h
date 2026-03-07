@@ -30,6 +30,7 @@ static const char* const playModeStrings[] = {"Forward", "Reverse", "Pendulum", 
 static const char* const clockDivStrings[] = {"/1", "/2", "/3", "/4", "/6", "/8", "/12", "/16", NULL};
 static const char* const templateStrings[] = {"Custom", "Note", "Fifth", "Triad", "7th",
                                               "Sus2", "Sus4", "Shell", "Quartal", "Cluster", NULL};
+static const char* const contourStrings[] = {"Random", "Arc", "Rise", "Fall", NULL};
 // ============================================================================
 // STEP PARAMETER MACRO
 // ============================================================================
@@ -116,8 +117,14 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Clear All", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Copy Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Paste Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
+    {.name = "Reset All", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
 
-    // Per-step parameters (33 + 15*8 = 153 total)
+    // Randomize (34-36)
+    {.name = "Contour", .min = 0, .max = 3, .def = 1, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = contourStrings},
+    {.name = "Depth", .min = 0, .max = 100, .def = 50, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Randomize", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
+
+    // Per-step parameters (37 + 15*8 = 157 total)
     STEP_PARAMS  // Step 1
     STEP_PARAMS  // Step 2
     STEP_PARAMS  // Step 3
@@ -144,7 +151,7 @@ static const uint8_t pageSetup[] = {kParamRunInput, kParamClockInput, kParamMidi
 static const uint8_t pageScale[] = {kParamScaleRoot, kParamScaleType, kParamOctaveBase};
 
 // Page 2: Record
-static const uint8_t pageRecord[] = {kParamRecord, kParamCurrentStep, kParamCaptureNorm, kParamClearStep, kParamClearAll, kParamCopyStep, kParamPasteStep};
+static const uint8_t pageRecord[] = {kParamRecord, kParamCurrentStep, kParamCaptureNorm, kParamClearStep, kParamClearAll, kParamCopyStep, kParamPasteStep, kParamResetAll};
 
 // Page 3: Playback
 static const uint8_t pagePlayback[] = {kParamPlayMode, kParamStepCount, kParamClockDiv};
@@ -157,6 +164,9 @@ static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNor
 
 // Page 6: Articulate
 static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamTimeCurve, kParamTimeDepth};
+
+// Page 7: Randomize
+static const uint8_t pageRandomize[] = {kParamRandomContour, kParamRandomDepth, kParamRandomize};
 
 // ============================================================================
 // DYNAMIC PAGE BUILDING
@@ -176,9 +186,10 @@ static const GlobalPageInfo globalPages[] = {
     {"Pitch",      pagePitch,      ARRAY_SIZE(pagePitch)},
     {"Voicing",    pageVoicing,    ARRAY_SIZE(pageVoicing)},
     {"Articulate", pageArticulate, ARRAY_SIZE(pageArticulate)},
+    {"Randomize",  pageRandomize,  ARRAY_SIZE(pageRandomize)},
 };
 
-static constexpr int NUM_GLOBAL_PAGES = 7;
+static constexpr int NUM_GLOBAL_PAGES = 8;
 static_assert(sizeof(globalPages) / sizeof(globalPages[0]) == NUM_GLOBAL_PAGES,
               "globalPages[] size must match NUM_GLOBAL_PAGES");
 

@@ -121,8 +121,12 @@ enum {
     kParamClearAll,
     kParamCopyStep,
     kParamPasteStep,
+    kParamResetAll,
+    kParamRandomContour,
+    kParamRandomDepth,
+    kParamRandomize,
 
-    kGlobalParamCount  // = 33
+    kGlobalParamCount  // = 37
 };
 
 // Per-step parameter offsets
@@ -286,6 +290,8 @@ struct Chordshift_DTC {
     int16_t lastClearAll;
     int16_t lastCopyStep;
     int16_t lastPasteStep;
+    int16_t lastResetAll;
+    int16_t lastRandomize;
 
     // Capture state (lightweight counters only — buffers live in SRAM)
     uint8_t captureCount;

@@ -23,6 +23,7 @@
 #include "midi_utils.h"
 #include "params.h"
 #include "playback.h"
+#include "randomize.h"
 #include "scales.h"
 #include "serial.h"
 #include "types.h"
@@ -177,11 +178,15 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
         NT_setParameterFromAudio(idx, kParamCopyStep + off, 0);
         NT_setParameterFromAudio(idx, kParamPasteStep + off, 0);
         NT_setParameterFromAudio(idx, kParamRecord + off, 0);
+        NT_setParameterFromAudio(idx, kParamResetAll + off, 0);
+        NT_setParameterFromAudio(idx, kParamRandomize + off, 0);
         dtc->lastClearStep = v[kParamClearStep];
         dtc->lastClearAll = v[kParamClearAll];
         dtc->lastCopyStep = v[kParamCopyStep];
         dtc->lastPasteStep = v[kParamPasteStep];
+        dtc->lastResetAll = v[kParamResetAll];
         dtc->lastRecord = v[kParamRecord];
+        dtc->lastRandomize = v[kParamRandomize];
         dtc->initialized = true;
     }
 
@@ -249,6 +254,34 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
             }
         }
         dtc->lastPasteStep = (int16_t)pasteStep;
+    }
+
+    // Parameter change detection: Reset All
+    int resetAll = v[kParamResetAll];
+    if (resetAll != dtc->lastResetAll) {
+        if (resetAll == 1) {
+            killAllPlayingNotes(alg);
+            uint32_t idx = NT_algorithmIndex(self);
+            uint32_t poff = NT_parameterOffset();
+            for (int p = 0; p < MAX_TOTAL_PARAMS; p++) {
+                NT_setParameterFromAudio(idx, p + poff, parameters[p].def);
+            }
+            for (int s = 0; s < NUM_STEPS; s++) {
+                alg->stepStates[s].baseChord.count = 0;
+                alg->stepStates[s].lastRendered.count = 0;
+            }
+        }
+        dtc->lastResetAll = (int16_t)resetAll;
+    }
+
+    // Parameter change detection: Randomize
+    int randomize = v[kParamRandomize];
+    if (randomize != dtc->lastRandomize) {
+        if (randomize == 1) {
+            randomizeSequence(alg->randState, v,
+                              NT_algorithmIndex(self), NT_parameterOffset());
+        }
+        dtc->lastRandomize = (int16_t)randomize;
     }
 
     // Timing and delayed notes
