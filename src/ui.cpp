@@ -3,25 +3,21 @@
  *
  * 256x64 pixel display:
  * - Row 0-8: Standard param line (returned by draw() returning false)
- * - Row 10-28: 8 step boxes showing chord info
- * - Row 30-62: Current playing chord visualization
+ * - Row 10-62: Step grid
  */
 
 #include "ui.h"
 #include "math.h"
 #include "scales.h"
 
-// Note name table
-static const char* const noteNames[] = {"C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"};
-
 // ============================================================================
 // STEP GRID
 // ============================================================================
 
 static void drawDegreeGrid(int bx, int by, int boxWidth, const ChordDegrees* chord, int brightness) {
-    static constexpr int SQ = 3;   // square size
-    static constexpr int GAP = 1;  // gap between squares
-    static constexpr int COLS = 6; // max cells per row
+    static constexpr int SQ = 4;   // square size
+    static constexpr int GAP = 2;  // gap between squares
+    static constexpr int V_MAX_COLS = 2; // max columns in vertical layout
 
     // Find degree range
     int lo = chord->degrees[0], hi = chord->degrees[0];
@@ -30,31 +26,46 @@ static void drawDegreeGrid(int bx, int by, int boxWidth, const ChordDegrees* cho
         if (chord->degrees[i] > hi) hi = chord->degrees[i];
     }
     int span = hi - lo + 1;
-    if (span > 18) span = 18;
+    if (span > 15) span = 15;
 
     // Build presence mask
-    bool present[18] = {};
+    bool present[15] = {};
     for (int i = 0; i < chord->count; i++) {
         int idx = chord->degrees[i] - lo;
-        if (idx >= 0 && idx < 18)
+        if (idx >= 0 && idx < 15)
             present[idx] = true;
     }
 
     // Calculate grid dimensions for centering
-    int cols = (span < COLS) ? span : COLS;
-    int rows = (span + COLS - 1) / COLS;
+    static constexpr int MAX_ROWS = 7;
+    static constexpr int H_THRESHOLD = MAX_ROWS * SQ + (MAX_ROWS - 1) * GAP + 14;
+    bool horizontal = (boxWidth >= H_THRESHOLD);
+
+    int rows, cols;
+    if (horizontal) {
+        int maxCols = (boxWidth - 6 + GAP) / (SQ + GAP);
+        if (maxCols > MAX_ROWS) maxCols = MAX_ROWS;
+        cols = (span < maxCols) ? span : maxCols;
+        rows = (span + cols - 1) / cols;
+    } else {
+        cols = (span <= MAX_ROWS) ? 1 : V_MAX_COLS;
+        rows = (cols == 1) ? span : MAX_ROWS;
+    }
     int gridW = cols * SQ + (cols - 1) * GAP;
     int gridH = rows * SQ + (rows - 1) * GAP;
-    int ox = bx + (boxWidth - gridW) / 2;
+    int ox = bx + (boxWidth + 1 - gridW) / 2;
     int oy = by + (UI_STEP_HEIGHT - gridH) / 2;
 
     for (int i = 0; i < span; i++) {
-        int col = i % COLS;
-        int row = i / COLS;
+        int col = horizontal ? (i % cols) : (i / rows);
+        int row = horizontal ? (i / cols) : (i % rows);
         int x = ox + col * (SQ + GAP);
         int y = oy + row * (SQ + GAP);
-        int b = present[i] ? brightness : 1;
-        NT_drawShapeI(kNT_rectangle, x, y, x + SQ - 1, y + SQ - 1, b);
+        if (present[i]) {
+            NT_drawShapeI(kNT_rectangle, x, y, x + SQ - 1, y + SQ - 1, brightness);
+        } else {
+            NT_drawShapeI(kNT_box, x, y, x + SQ - 1, y + SQ - 1, 1);
+        }
     }
 }
 
@@ -69,7 +80,6 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
     // 256 pixels, 8 steps max, with gaps
     int totalWidth = 252;
     int boxWidth = (totalWidth - (stepCount - 1) * UI_STEP_GAP) / stepCount;
-    if (boxWidth > 30) boxWidth = 30;
 
     for (int s = 0; s < stepCount; s++) {
         int x = UI_LEFT_MARGIN + s * (boxWidth + UI_STEP_GAP);
@@ -99,19 +109,20 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
 
         // Step label (centered in box)
         int textBright = enabled ? UI_BRIGHTNESS_MAX : 2;
-        int cx = x + boxWidth / 2;
+        int cx = x + (boxWidth + 1) / 2;
         int tmpl = sp.chordTemplate();
         if (tmpl > 0) {
-            static const char* const tmplAbbrev[] = {
-                "", "N", "5h", "Tr", "7h", "S2", "S4", "Sh", "Q4", "Cl"
-            };
-            int textY = y + (UI_STEP_HEIGHT + UI_FONT_NORMAL_ASCENT) / 2;
-            NT_drawText(cx, textY, tmplAbbrev[tmpl], textBright, kNT_textCentre, kNT_textNormal);
+            const ChordTemplate& t = CHORD_TEMPLATES[tmpl];
+            ChordDegrees tmplChord;
+            tmplChord.count = t.count;
+            for (int i = 0; i < t.count; i++)
+                tmplChord.degrees[i] = t.degrees[i];
+            drawDegreeGrid(x, y, boxWidth, &tmplChord, textBright);
         } else if (ss->baseChord.count > 0) {
             drawDegreeGrid(x, y, boxWidth, &ss->baseChord, textBright);
         } else {
             int textY = y + (UI_STEP_HEIGHT + UI_FONT_NORMAL_ASCENT) / 2;
-            NT_drawText(cx, textY, "--", textBright, kNT_textCentre, kNT_textNormal);
+            NT_drawText(cx, textY, "--", UI_BRIGHTNESS_LOW, kNT_textCentre, kNT_textNormal);
         }
 
         // Disabled indicator
@@ -124,53 +135,11 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
 }
 
 // ============================================================================
-// CHORD VISUALIZATION
-// ============================================================================
-
-static void drawChordVisualization(ChordshiftAlgorithm* alg) {
-    Chordshift_DTC* dtc = alg->dtc;
-    // Show the most recently rendered chord
-    int playStep = dtc->currentPlayStep;
-    if (playStep >= NUM_STEPS) return;
-
-    StepState* ss = &alg->stepStates[playStep];
-    RenderedChord* rc = &ss->lastRendered;
-
-    if (rc->count == 0) return;
-
-    int y = UI_CHORD_Y;
-    int barWidth = 240 / rc->count;
-    if (barWidth > 28) barWidth = 28;
-    if (barWidth < 4) barWidth = 4;
-
-    for (int i = 0; i < rc->count; i++) {
-        int x = UI_LEFT_MARGIN + i * (barWidth + 1);
-        RenderedNote* rn = &rc->notes[i];
-
-        // Velocity bar
-        int barHeight = (rn->velocity * UI_BAR_MAX_HEIGHT) / 127;
-        if (barHeight < 1) barHeight = 1;
-        int barY = y + UI_BAR_MAX_HEIGHT - barHeight;
-
-        int brightness = transportIsRunning(dtc->transportState) ? UI_BRIGHTNESS_MED : UI_BRIGHTNESS_DIM;
-        NT_drawShapeI(kNT_rectangle, x, barY, x + barWidth - 1, y + UI_BAR_MAX_HEIGHT - 1, brightness);
-
-        // Note name below bar
-        if (barWidth >= 8) {
-            int noteIdx = rn->midiNote % 12;
-            NT_drawText(x + barWidth / 2, y + UI_BAR_MAX_HEIGHT + UI_FONT_NORMAL_ASCENT + 1,
-                        noteNames[noteIdx], UI_BRIGHTNESS_MED, kNT_textCentre, kNT_textNormal);
-        }
-    }
-}
-
-// ============================================================================
 // MAIN DRAW
 // ============================================================================
 
 bool drawUI(ChordshiftAlgorithm* alg) {
     drawStepGrid(alg);
-    drawChordVisualization(alg);
 
     return false;  // Show standard parameter line at top
 }
