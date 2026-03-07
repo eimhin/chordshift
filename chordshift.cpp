@@ -379,6 +379,17 @@ bool deserialise(_NT_algorithm* self, _NT_jsonParse& parse) {
     return deserialiseData((ChordshiftAlgorithm*)self, parse);
 }
 
+int parameterUiPrefix(_NT_algorithm* self, int p, char* buff) {
+    (void)self;
+    if (p < kGlobalParamCount)
+        return 0;
+    int stepIdx = (p - kGlobalParamCount) / PARAMS_PER_STEP;
+    int len = NT_intToString(buff, stepIdx + 1);
+    buff[len++] = ':';
+    buff[len] = 0;
+    return len;
+}
+
 // ============================================================================
 // FACTORY DEFINITION
 // ============================================================================
@@ -405,7 +416,7 @@ static const _NT_factory factory = {
     .serialise = serialise,
     .deserialise = deserialise,
     .midiSysEx = NULL,
-    .parameterUiPrefix = NULL,
+    .parameterUiPrefix = parameterUiPrefix,
     .parameterString = parameterString,
 };
 
