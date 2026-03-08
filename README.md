@@ -109,18 +109,19 @@ Generate random step parameter variations with contour-shaped distribution.
 | Parameter    | Range                                                    | Default | Description                                      |
 | ------------ | -------------------------------------------------------- | ------- | ------------------------------------------------ |
 | Randomize    | No, Yes                                                  | No      | Trigger randomization                            |
-| Contour      | Random, Arc, Rise, Fall                                  | Arc     | Shape of parameter variation across steps        |
-| Seq Length   | None, 8, 16, 32, 64, 128, 256                           | 32      | Sequence length preset (sets Steps + Repeat)     |
+| Contour      | Random, Arc, Rise, Fall, Plateau, Sentence, Return, Flat, V-shape, Late Bloom, Period, Converge | Arc | Shape of transpose variation across steps (scaled to fit active step count) |
+| Voice Lead   | Off, On                                                  | Off     | Optimize inversions for smooth voice leading     |
+| Seq Length   | None, 8, 16, 32, 64, 128, 256                           | 32      | Target sequence length (None = lock steps, randomize Clock Div/Hold only) |
 | Seq Div      | None, 1, 2, 4, 8, 16, 32                                | 4       | Clock division preset                            |
 | Seq Hold     | Varied, Uniform                                          | Varied  | Hold step variation style                        |
 | Template     | Off, 5th, Triad, 7th, 5th+Tri, 5th+7th, Tri+7th, All   | Tri+7th | Chord templates to pick from                     |
-| Transpose %  | 0 – 100%                                                 | 40      | Probability of randomizing transpose per step    |
-| Inversion %  | 0 – 100%                                                 | 25      | Probability of randomizing inversion per step    |
-| Rotation %   | 0 – 100%                                                 | 10      | Probability of randomizing rotation per step     |
-| Spread %     | 0 – 100%                                                 | 10      | Probability of randomizing spread per step       |
-| Reverse %    | 0 – 100%                                                 | 25      | Probability of randomizing reverse per step      |
-| Gate %       | 0 – 100%                                                 | 25      | Probability of randomizing gate length per step  |
-| Repeat %     | 0 – 100%                                                 | 0       | Probability of randomizing repeat per step       |
+| Transpose    | 0 – 100%                                                 | 40      | Depth of transpose randomization per step        |
+| Inversion    | 0 – 100%                                                 | 25      | Depth of inversion randomization per step        |
+| Rotation     | 0 – 100%                                                 | 10      | Depth of rotation randomization per step         |
+| Spread       | 0 – 100%                                                 | 10      | Depth of spread randomization per step           |
+| Reverse      | 0 – 100%                                                 | 25      | Probability of reverse per step                  |
+| Gate         | 0 – 100%                                                 | 25      | Depth of gate length randomization per step      |
+| Repeat       | 0 – 100%                                                 | 0       | Depth of repeat randomization per step           |
 
 ### Per-Step (Step 1–8)
 
@@ -143,6 +144,9 @@ Each step has its own set of transforms that combine with the global values.
 | Repeat    | 1 – 4                                                                       | 1       | Ratchet — repeat the chord N times per step          |
 | Hold      | 1 – 8                                                                       | 1       | Hold step for N clock ticks, scaling gate duration    |
 | Direction | Up, Down, Pendulum, PingPong, Diverge, Converge, Random, Pedal Lo, Pedal Hi | Up      | Overrides global direction if nonzero                |
+| Oct Random | -100 – +100%                                                               | 0       | Random octave displacement per note (positive = up bias, negative = down bias) |
+| Inv Random | -100 – +100%                                                               | 0       | Random inversion per playback (positive = up bias, negative = down bias) |
+| Density    | 0 – 100%                                                                    | 100     | Probability each note in the chord sounds            |
 
 ## How Capture Works
 
