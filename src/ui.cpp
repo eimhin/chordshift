@@ -94,17 +94,21 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
         bool isPlaying = transportIsRunning(dtc->transportState) && (s == dtc->currentPlayStep);
         bool isEdit = (s == editStep);
 
-        // Background (playing step only)
-        if (isPlaying) {
-            NT_drawShapeI(kNT_rectangle, x, y, x2, y2, UI_BRIGHTNESS_LOW);
-        }
-
         // Edit step outline (blinks when recording)
         if (isEdit) {
             bool recording = (v[kParamRecord] == 1);
             bool showOutline = !recording || (dtc->drawFrameCount / UI_BLINK_HALF_PERIOD) & 1;
             if (showOutline) {
                 NT_drawShapeI(kNT_box, x, y, x2, y2, UI_BRIGHTNESS_MAX);
+            }
+        }
+
+        // Playing step border (inset when overlapping edit outline)
+        if (isPlaying) {
+            if (isEdit) {
+                NT_drawShapeI(kNT_box, x + 2, y + 2, x2 - 2, y2 - 2, UI_BRIGHTNESS_LOW);
+            } else {
+                NT_drawShapeI(kNT_box, x, y, x2, y2, UI_BRIGHTNESS_LOW);
             }
         }
 

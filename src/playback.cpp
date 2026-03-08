@@ -140,6 +140,7 @@ void processClockTick(ChordshiftAlgorithm* alg) {
 
     // Kill any currently playing notes before new step
     killAllPlayingNotes(alg);
+    sendAllNotesOff(alg);
 
     // Calculate next step
     int nextStep;
