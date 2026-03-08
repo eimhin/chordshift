@@ -157,8 +157,11 @@ enum {
     kStepRepeat,
     kStepHold,
     kStepDirection,
+    kStepOctRandom,
+    kStepInvRandom,
+    kStepDensity,
 
-    kStepParamCount  // = 15
+    kStepParamCount  // = 18
 };
 
 // Validate parameter layout matches config constants
@@ -206,6 +209,9 @@ struct StepParams {
     int repeat() const { return clamp(raw(kStepRepeat), 1, 4); }
     int hold() const { return clamp(raw(kStepHold), 1, 8); }
     int direction() const { return raw(kStepDirection); }
+    int octRandom() const { return clamp(raw(kStepOctRandom), -100, 100); }
+    int invRandom() const { return clamp(raw(kStepInvRandom), -100, 100); }
+    int density() const { return clamp(raw(kStepDensity), 0, 100); }
 };
 
 // ============================================================================

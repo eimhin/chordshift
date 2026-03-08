@@ -55,7 +55,10 @@ static const char* const randTemplateStrings[] = {"Off", "5th", "Triad", "7th", 
     {.name = "Reflect", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = reflectStrings}, \
     {.name = "Repeat", .min = 1, .max = 4, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL}, \
     {.name = "Hold", .min = 1, .max = 8, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL}, \
-    {.name = "Direction", .min = 0, .max = 8, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = directionStrings},
+    {.name = "Direction", .min = 0, .max = 8, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = directionStrings}, \
+    {.name = "Oct Random", .min = -100, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL}, \
+    {.name = "Inv Random", .min = -100, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL}, \
+    {.name = "Density", .min = 0, .max = 100, .def = 100, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 // clang-format on
 
 // ============================================================================

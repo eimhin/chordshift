@@ -125,6 +125,14 @@ static void applyRotation(DegreeBuffer* buf, int rot) {
     }
 }
 
+static void applyInvRandom(DegreeBuffer* buf, int amount, int scaleType, uint32_t& randState) {
+    if (amount == 0 || buf->count <= 1) return;
+    int prob = amount > 0 ? amount : -amount;
+    if (randRange(randState, 1, 100) <= prob) {
+        applyInversion(buf, amount > 0 ? 1 : -1, scaleType);
+    }
+}
+
 // ============================================================================
 // STAGE 3: NORMALIZE
 // ============================================================================
@@ -300,6 +308,49 @@ static void applyDirection(DegreeBuffer* buf, int dir, uint32_t& randState) {
 }
 
 // ============================================================================
+// RANDOMIZATION TRANSFORMS
+// ============================================================================
+
+static void applyOctRandom(DegreeBuffer* buf, int amount, uint32_t& randState) {
+    if (amount == 0 || buf->count <= 1) return;
+
+    int prob = amount > 0 ? amount : -amount;
+    int16_t shift = amount > 0 ? 7 : -7;
+
+    // Find index of lowest note
+    int lowestIdx = 0;
+    for (int i = 1; i < buf->count; i++) {
+        if (buf->degrees[i] < buf->degrees[lowestIdx]) lowestIdx = i;
+    }
+
+    for (int i = 0; i < buf->count; i++) {
+        if (i == lowestIdx) continue;
+        if (randRange(randState, 1, 100) <= prob) {
+            buf->degrees[i] += shift;
+        }
+    }
+}
+
+static void applyDensity(DegreeBuffer* buf, int probability, uint32_t& randState) {
+    if (probability >= 100 || buf->count <= 1) return;
+
+    // Find index of lowest note (protect it)
+    int lowestIdx = 0;
+    for (int i = 1; i < buf->count; i++) {
+        if (buf->degrees[i] < buf->degrees[lowestIdx]) lowestIdx = i;
+    }
+
+    // Compact in-place: keep notes that pass the roll or are the lowest
+    int write = 0;
+    for (int i = 0; i < buf->count; i++) {
+        if (i == lowestIdx || randRange(randState, 1, 100) <= probability) {
+            buf->degrees[write++] = buf->degrees[i];
+        }
+    }
+    buf->count = (uint8_t)write;
+}
+
+// ============================================================================
 // FULL PIPELINE
 // ============================================================================
 
@@ -357,12 +408,19 @@ void applyTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx, uint32_t&
 
     // Stage 2: Voicing
     applyInversion(buf, inversion, scaleType);
+    applyInvRandom(buf, sp.invRandom(), scaleType, randState);
     applyRotation(buf, rotation);
 
     // Stage 3: Normalize
     applyNormalize(buf, normalize);
 
+    // Oct Random: after normalize, before order
+    applyOctRandom(buf, sp.octRandom(), randState);
+
     // Stage 4: Order
     if (reverse) applyReverse(buf);
     applyDirection(buf, direction, randState);
+
+    // Density: after order, as final transform
+    applyDensity(buf, sp.density(), randState);
 }
