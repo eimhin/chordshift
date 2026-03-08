@@ -12,7 +12,8 @@ static const int seqLenValues[] = {0, 8, 16, 32, 64, 128, 256};
 static const int seqDivValues[] = {1, 1, 2, 4, 8, 16, 32};
 
 static void randomizeSequenceLength(uint32_t& randState, const int16_t* v,
-                                    uint32_t idx, uint32_t off) {
+                                    uint32_t idx, uint32_t off,
+                                    float& stepDuration) {
     int seqLenEnum = clamp(v[kParamRandSeqLen], 0, 6);
     if (seqLenEnum == 0) return;
 
@@ -66,8 +67,11 @@ static void randomizeSequenceLength(uint32_t& randState, const int16_t* v,
         int holdSum = validSums[randRange(randState, 0, numValidSums - 1)];
 
         // Apply steps and clockDiv
+        int oldDiv = CLOCK_DIV_VALUES[clamp(v[kParamClockDiv], 0, NUM_CLOCK_DIV_VALUES - 1)];
         NT_setParameterFromAudio(idx, kParamStepCount + off, steps);
         NT_setParameterFromAudio(idx, kParamClockDiv + off, divIdx);
+        if (oldDiv > 0)
+            stepDuration = stepDuration * (float)cd / (float)oldDiv;
 
         if (uniform) {
             int perStep = holdSum / steps;
@@ -96,11 +100,11 @@ static void randomizeSequenceLength(uint32_t& randState, const int16_t* v,
 }
 
 void randomizeSequence(uint32_t& randState, const int16_t* v,
-                       uint32_t idx, uint32_t off) {
+                       uint32_t idx, uint32_t off, float& stepDuration) {
     int contour = v[kParamRandomContour];
 
     // Sequence length randomization (Steps, ClockDiv, Hold)
-    randomizeSequenceLength(randState, v, idx, off);
+    randomizeSequenceLength(randState, v, idx, off, stepDuration);
 
     int dTranspose = clamp(v[kParamRandTranspose], 0, 100);
     int dInversion = clamp(v[kParamRandInversion], 0, 100);
@@ -185,11 +189,11 @@ void randomizeSequence(uint32_t& randState, const int16_t* v,
             NT_setParameterFromAudio(idx, stepParam(s, kStepReverse) + off, rev);
         }
 
-        // Gate: 1..round(1 + 199 * depth/100)
+        // Gate: 10..round(10 + 90 * depth/100)
         if (dGate > 0) {
-            int gateMax = 1 + (199 * dGate + 50) / 100;
+            int gateMax = 10 + (90 * dGate + 50) / 100;
             NT_setParameterFromAudio(idx, stepParam(s, kStepGateLength) + off,
-                                     randRange(randState, 1, gateMax));
+                                     randRange(randState, 10, gateMax));
         }
 
         // Repeat: 1..round(1 + 3 * depth/100)

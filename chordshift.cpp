@@ -192,97 +192,86 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
 
     // Parameter change detection: Record toggle
     int record = v[kParamRecord];
-    if (record != dtc->lastRecord) {
-        // Reset capture state on any toggle to prevent ghost notes
+    if (record == 1 && dtc->lastRecord == 0) {
+        // Reset capture state on record arm to prevent ghost notes
         dtc->captureCount = 0;
         dtc->snapshotCount = 0;
         dtc->inputVel = 0;
         memset(alg->captureNotes, 0, sizeof(alg->captureNotes));
         memset(alg->snapshotNotes, 0, sizeof(alg->snapshotNotes));
-        dtc->lastRecord = (int16_t)record;
     }
+    dtc->lastRecord = (int16_t)record;
 
     // Parameter change detection: Clear Step
     int clearStep = v[kParamClearStep];
-    if (clearStep != dtc->lastClearStep) {
-        if (clearStep == 1) {
-            int editStep = clamp(v[kParamCurrentStep] - 1, 0, NUM_STEPS - 1);
-            alg->stepStates[editStep].baseChord.count = 0;
-            alg->stepStates[editStep].lastRendered.count = 0;
-        }
-        dtc->lastClearStep = (int16_t)clearStep;
+    if (clearStep == 1 && dtc->lastClearStep == 0) {
+        int editStep = clamp(v[kParamCurrentStep] - 1, 0, NUM_STEPS - 1);
+        alg->stepStates[editStep].baseChord.count = 0;
+        alg->stepStates[editStep].lastRendered.count = 0;
     }
+    dtc->lastClearStep = (int16_t)clearStep;
 
     // Parameter change detection: Clear All
     int clearAll = v[kParamClearAll];
-    if (clearAll != dtc->lastClearAll) {
-        if (clearAll == 1) {
-            killAllPlayingNotes(alg);
-            for (int s = 0; s < NUM_STEPS; s++) {
-                alg->stepStates[s].baseChord.count = 0;
-                alg->stepStates[s].lastRendered.count = 0;
-            }
+    if (clearAll == 1 && dtc->lastClearAll == 0) {
+        killAllPlayingNotes(alg);
+        for (int s = 0; s < NUM_STEPS; s++) {
+            alg->stepStates[s].baseChord.count = 0;
+            alg->stepStates[s].lastRendered.count = 0;
         }
-        dtc->lastClearAll = (int16_t)clearAll;
     }
+    dtc->lastClearAll = (int16_t)clearAll;
 
     // Parameter change detection: Copy Step
     int copyStep = v[kParamCopyStep];
-    if (copyStep != dtc->lastCopyStep) {
-        if (copyStep == 1) {
-            int editStep = clamp(v[kParamCurrentStep] - 1, 0, NUM_STEPS - 1);
-            alg->clipboard.chord = alg->stepStates[editStep].baseChord;
-            for (int i = 0; i < PARAMS_PER_STEP; i++) {
-                alg->clipboard.params[i] = v[stepParam(editStep, i)];
-            }
-            alg->clipboard.valid = true;
+    if (copyStep == 1 && dtc->lastCopyStep == 0) {
+        int editStep = clamp(v[kParamCurrentStep] - 1, 0, NUM_STEPS - 1);
+        alg->clipboard.chord = alg->stepStates[editStep].baseChord;
+        for (int i = 0; i < PARAMS_PER_STEP; i++) {
+            alg->clipboard.params[i] = v[stepParam(editStep, i)];
         }
-        dtc->lastCopyStep = (int16_t)copyStep;
+        alg->clipboard.valid = true;
     }
+    dtc->lastCopyStep = (int16_t)copyStep;
 
     // Parameter change detection: Paste Step
     int pasteStep = v[kParamPasteStep];
-    if (pasteStep != dtc->lastPasteStep) {
-        if (pasteStep == 1 && alg->clipboard.valid) {
-            int editStep = clamp(v[kParamCurrentStep] - 1, 0, NUM_STEPS - 1);
-            alg->stepStates[editStep].baseChord = alg->clipboard.chord;
-            alg->stepStates[editStep].lastRendered.count = 0;
-            uint32_t idx = NT_algorithmIndex(self);
-            uint32_t off = NT_parameterOffset();
-            for (int i = 0; i < PARAMS_PER_STEP; i++) {
-                NT_setParameterFromAudio(idx, stepParam(editStep, i) + off, alg->clipboard.params[i]);
-            }
+    if (pasteStep == 1 && dtc->lastPasteStep == 0 && alg->clipboard.valid) {
+        int editStep = clamp(v[kParamCurrentStep] - 1, 0, NUM_STEPS - 1);
+        alg->stepStates[editStep].baseChord = alg->clipboard.chord;
+        alg->stepStates[editStep].lastRendered.count = 0;
+        uint32_t idx = NT_algorithmIndex(self);
+        uint32_t off = NT_parameterOffset();
+        for (int i = 0; i < PARAMS_PER_STEP; i++) {
+            NT_setParameterFromAudio(idx, stepParam(editStep, i) + off, alg->clipboard.params[i]);
         }
-        dtc->lastPasteStep = (int16_t)pasteStep;
     }
+    dtc->lastPasteStep = (int16_t)pasteStep;
 
     // Parameter change detection: Reset All
     int resetAll = v[kParamResetAll];
-    if (resetAll != dtc->lastResetAll) {
-        if (resetAll == 1) {
-            killAllPlayingNotes(alg);
-            uint32_t idx = NT_algorithmIndex(self);
-            uint32_t poff = NT_parameterOffset();
-            for (int p = 0; p < MAX_TOTAL_PARAMS; p++) {
-                NT_setParameterFromAudio(idx, p + poff, parameters[p].def);
-            }
-            for (int s = 0; s < NUM_STEPS; s++) {
-                alg->stepStates[s].baseChord.count = 0;
-                alg->stepStates[s].lastRendered.count = 0;
-            }
+    if (resetAll == 1 && dtc->lastResetAll == 0) {
+        killAllPlayingNotes(alg);
+        uint32_t idx = NT_algorithmIndex(self);
+        uint32_t poff = NT_parameterOffset();
+        for (int p = 0; p < MAX_TOTAL_PARAMS; p++) {
+            NT_setParameterFromAudio(idx, p + poff, parameters[p].def);
         }
-        dtc->lastResetAll = (int16_t)resetAll;
+        for (int s = 0; s < NUM_STEPS; s++) {
+            alg->stepStates[s].baseChord.count = 0;
+            alg->stepStates[s].lastRendered.count = 0;
+        }
     }
+    dtc->lastResetAll = (int16_t)resetAll;
 
     // Parameter change detection: Randomize
     int randomize = v[kParamRandomize];
-    if (randomize != dtc->lastRandomize) {
-        if (randomize == 1) {
-            randomizeSequence(alg->randState, v,
-                              NT_algorithmIndex(self), NT_parameterOffset());
-        }
-        dtc->lastRandomize = (int16_t)randomize;
+    if (randomize == 1 && dtc->lastRandomize == 0) {
+        randomizeSequence(alg->randState, v,
+                          NT_algorithmIndex(self), NT_parameterOffset(),
+                          dtc->stepDuration);
     }
+    dtc->lastRandomize = (int16_t)randomize;
 
     // Timing and delayed notes
     dtc->stepTime += dt;
