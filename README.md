@@ -37,7 +37,7 @@ The display shows a step grid (top) and a velocity/note visualization of the cur
 | Run         | CV input                                    |          | Gate input for transport start/stop |
 | Clock       | CV input                                    |          | Trigger input for step advance      |
 | MIDI In Ch  | All, 1–16                                   | 1        | MIDI input channel filter           |
-| MIDI Out Ch | 1 – 16                                      | 1        | MIDI output channel                 |
+| MIDI Out Ch | 1 – 16                                      | 2        | MIDI output channel                 |
 | Destination | Breakout, SelectBus, USB, Internal, All     | Internal | MIDI output routing                 |
 | Velocity    | 1 – 127                                     | 100      | Base velocity for output notes      |
 
@@ -60,6 +60,7 @@ The display shows a step grid (top) and a velocity/note visualization of the cur
 | Clear All    | No, Yes   | No      | Clear all steps                                               |
 | Copy Step    | No, Yes   | No      | Copy current edit step to clipboard                           |
 | Paste Step   | No, Yes   | No      | Paste clipboard to current edit step                          |
+| Reset All    | No, Yes   | No      | Reset all step parameters to defaults                         |
 
 ### Playback
 
@@ -67,7 +68,7 @@ The display shows a step grid (top) and a velocity/note visualization of the cur
 | --------- | -------------------------------- | ------- | -------------------------------------------- |
 | Play Mode | Forward, Reverse, Pendulum, Random | Forward | Step sequencer direction                     |
 | Steps     | 1 – 8                           | 8       | Number of active steps                       |
-| Clock Div | /1, /2, /3, /4, /6, /8, /12, /16 | /1     | Divide incoming clock before step advance    |
+| Clock Div | /1, /2, /3, /4, /6, /8, /12, /16 | /4     | Divide incoming clock before step advance    |
 
 ### Pitch
 
@@ -97,8 +98,29 @@ Global pitch transforms — combined additively with per-step values.
 | Strum      | 0 – 100 ms                                      | 0       | Delay between successive notes in the chord |
 | Vel Shape  | Ramp, Curve, Peak, Step, Random              | Ramp    | Velocity distribution across strummed notes |
 | Vel Depth  | 0 – 100%                                        | 0       | Amount of velocity curve applied            |
+| Vel Deviation | 0 – 100%                                     | 5       | Random velocity variation per note          |
 | Time Shape | Off, Ramp, Curve, Peak, Step, Random        | Off     | Strum timing distribution                   |
 | Time Depth | 0 – 100%                                        | 0       | Amount of time curve applied                |
+
+### Randomize
+
+Generate random step parameter variations with contour-shaped distribution.
+
+| Parameter    | Range                                                    | Default | Description                                      |
+| ------------ | -------------------------------------------------------- | ------- | ------------------------------------------------ |
+| Randomize    | No, Yes                                                  | No      | Trigger randomization                            |
+| Contour      | Random, Arc, Rise, Fall                                  | Arc     | Shape of parameter variation across steps        |
+| Seq Length   | None, 8, 16, 32, 64, 128, 256                           | 32      | Sequence length preset (sets Steps + Repeat)     |
+| Seq Div      | None, 1, 2, 4, 8, 16, 32                                | 4       | Clock division preset                            |
+| Seq Hold     | Varied, Uniform                                          | Varied  | Hold step variation style                        |
+| Template     | Off, 5th, Triad, 7th, 5th+Tri, 5th+7th, Tri+7th, All   | Tri+7th | Chord templates to pick from                     |
+| Transpose %  | 0 – 100%                                                 | 40      | Probability of randomizing transpose per step    |
+| Inversion %  | 0 – 100%                                                 | 25      | Probability of randomizing inversion per step    |
+| Rotation %   | 0 – 100%                                                 | 10      | Probability of randomizing rotation per step     |
+| Spread %     | 0 – 100%                                                 | 10      | Probability of randomizing spread per step       |
+| Reverse %    | 0 – 100%                                                 | 25      | Probability of randomizing reverse per step      |
+| Gate %       | 0 – 100%                                                 | 25      | Probability of randomizing gate length per step  |
+| Repeat %     | 0 – 100%                                                 | 0       | Probability of randomizing repeat per step       |
 
 ### Per-Step (Step 1–8)
 
@@ -115,7 +137,7 @@ Each step has its own set of transforms that combine with the global values.
 | Reverse   | No, Yes                                                                     | No      | XOR (global ^ step)                                  |
 | Strum     | 0 – 100 ms                                                                  | 0       | Additive                                             |
 | Velocity  | -64 – +64                                                                   | 0       | Offset from base velocity                            |
-| Gate      | 1 – 200%                                                                    | 100     | Gate length as percentage of step duration            |
+| Gate      | 10 – 200%                                                                   | 100     | Gate length as percentage of step duration            |
 | Prob      | 0 – 100%                                                                    | 100     | Probability the step plays                           |
 | Reflect   | Off, Root, Lowest, Highest                                                  | Off     | Overrides global if nonzero                          |
 | Repeat    | 1 – 4                                                                       | 1       | Ratchet — repeat the chord N times per step          |
