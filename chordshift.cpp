@@ -269,7 +269,7 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     if (randomize == 1 && dtc->lastRandomize == 0) {
         randomizeSequence(alg->randState, v,
                           NT_algorithmIndex(self), NT_parameterOffset(),
-                          dtc->stepDuration);
+                          dtc->stepDuration, alg->stepStates);
     }
     dtc->lastRandomize = (int16_t)randomize;
 

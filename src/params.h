@@ -141,6 +141,7 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Reverse %", .min = 0, .max = 100, .def = 25, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Gate %", .min = 0, .max = 100, .def = 25, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Repeat %", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Voice Lead", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = offOnStrings},
 
     // Per-step parameters (47 + 15*8 = 167 total)
     STEP_PARAMS  // Step 1
@@ -189,7 +190,8 @@ static const uint8_t pageRandomize[] = {
     kParamRandSeqLen, kParamRandSeqDiv, kParamRandSeqHold,
     kParamRandTemplate, kParamRandTranspose,
     kParamRandInversion, kParamRandRotation, kParamRandSpread,
-    kParamRandReverse, kParamRandGate, kParamRandRepeat
+    kParamRandReverse, kParamRandGate, kParamRandRepeat,
+    kParamRandVoiceLead
 };
 
 // ============================================================================

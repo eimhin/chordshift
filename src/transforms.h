@@ -14,3 +14,6 @@ void applyTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx, uint32_t&
 // Apply only pitch-content transforms (no rotation, reverse, direction).
 // Used by UI to preview chord shape + position without ordering effects.
 void applyPitchTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx);
+
+// Apply inversion (move lowest/highest notes across octave boundary).
+void applyInversion(DegreeBuffer* buf, int inv, int scaleType);

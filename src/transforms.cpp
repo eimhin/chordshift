@@ -79,7 +79,7 @@ static void applySpread(DegreeBuffer* buf, int amount, int anchor) {
 // STAGE 2: VOICING TRANSFORMS
 // ============================================================================
 
-static void applyInversion(DegreeBuffer* buf, int inv, int scaleType) {
+void applyInversion(DegreeBuffer* buf, int inv, int scaleType) {
     if (inv == 0 || buf->count <= 1) return;
 
     ScaleData sd = getScaleData(scaleType);

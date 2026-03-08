@@ -136,8 +136,9 @@ enum {
     kParamRandReverse,
     kParamRandGate,
     kParamRandRepeat,
+    kParamRandVoiceLead,
 
-    kGlobalParamCount  // = 48
+    kGlobalParamCount  // = 49
 };
 
 // Per-step parameter offsets

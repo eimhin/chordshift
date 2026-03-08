@@ -2,6 +2,8 @@
 #include "config.h"
 #include "math.h"
 #include "random.h"
+#include "transforms.h"
+#include "scales.h"
 #include <distingnt/api.h>
 
 static const int8_t contourArc[NUM_STEPS]  = {-4, -1,  2,  4,  5,  3,  0, -3};
@@ -99,8 +101,125 @@ static void randomizeSequenceLength(uint32_t& randState, const int16_t* v,
     }
 }
 
+static void buildStepChord(DegreeBuffer* buf, const int16_t* v, int step,
+                           StepState* stepStates) {
+    StepParams sp = StepParams::fromAlgorithm(v, step);
+    int tmpl = sp.chordTemplate();
+    if (tmpl > 0) {
+        const ChordTemplate& t = CHORD_TEMPLATES[tmpl];
+        buf->count = t.count;
+        for (int i = 0; i < buf->count; i++)
+            buf->degrees[i] = t.degrees[i];
+    } else {
+        StepState* ss = &stepStates[step];
+        buf->count = ss->baseChord.count;
+        for (int i = 0; i < buf->count; i++)
+            buf->degrees[i] = ss->baseChord.degrees[i];
+    }
+}
+
+static void sortDegrees(int16_t* arr, int count) {
+    for (int i = 1; i < count; i++) {
+        int16_t key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+static int chordDistance(const DegreeBuffer* a, const DegreeBuffer* b) {
+    int16_t sa[MAX_CHORD_NOTES], sb[MAX_CHORD_NOTES];
+    int na = a->count < MAX_CHORD_NOTES ? a->count : MAX_CHORD_NOTES;
+    int nb = b->count < MAX_CHORD_NOTES ? b->count : MAX_CHORD_NOTES;
+    for (int i = 0; i < na; i++) sa[i] = a->degrees[i];
+    for (int i = 0; i < nb; i++) sb[i] = b->degrees[i];
+    sortDegrees(sa, na);
+    sortDegrees(sb, nb);
+
+    // Pad shorter array by repeating last element
+    int maxN = na > nb ? na : nb;
+    for (int i = na; i < maxN; i++) sa[i] = sa[na - 1];
+    for (int i = nb; i < maxN; i++) sb[i] = sb[nb - 1];
+
+    int dist = 0;
+    for (int i = 0; i < maxN; i++) {
+        int d = sa[i] - sb[i];
+        dist += d < 0 ? -d : d;
+    }
+    return dist;
+}
+
+static void voiceLeadPass(const int16_t* v, uint32_t idx, uint32_t off,
+                           StepState* stepStates) {
+    if (v[kParamRandVoiceLead] == 0) return;
+
+    int stepCount = clamp(v[kParamStepCount], 1, NUM_STEPS);
+    int scaleType = v[kParamScaleType];
+
+    // Build previous step's chord with pitch transforms
+    DegreeBuffer prevBuf;
+    buildStepChord(&prevBuf, v, 0, stepStates);
+    if (prevBuf.count == 0) return;
+    applyPitchTransforms(&prevBuf, v, 0);
+
+    for (int s = 1; s < stepCount; s++) {
+        DegreeBuffer baseBuf;
+        buildStepChord(&baseBuf, v, s, stepStates);
+        if (baseBuf.count == 0) continue;
+
+        // Apply pitch transforms with current params (includes step's existing inversion)
+        DegreeBuffer curBuf;
+        curBuf.count = baseBuf.count;
+        for (int i = 0; i < baseBuf.count; i++)
+            curBuf.degrees[i] = baseBuf.degrees[i];
+        applyPitchTransforms(&curBuf, v, s);
+
+        // Read current per-step inversion
+        StepParams sp = StepParams::fromAlgorithm(v, s);
+        int curStepInv = sp.inversion();
+
+        int bestDelta = 0;
+        int bestDist = chordDistance(&curBuf, &prevBuf);
+        DegreeBuffer bestBuf = curBuf;
+
+        for (int delta = -4; delta <= 4; delta++) {
+            if (delta == 0) continue;
+            int newInv = curStepInv + delta;
+            if (newInv < -4 || newInv > 4) continue;
+
+            // Copy base chord and apply pitch transforms, then apply delta inversion
+            DegreeBuffer trial;
+            trial.count = baseBuf.count;
+            for (int i = 0; i < baseBuf.count; i++)
+                trial.degrees[i] = baseBuf.degrees[i];
+            applyPitchTransforms(&trial, v, s);
+            applyInversion(&trial, delta, scaleType);
+
+            int dist = chordDistance(&trial, &prevBuf);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestDelta = delta;
+                bestBuf = trial;
+            }
+        }
+
+        // Write best inversion back
+        if (bestDelta != 0) {
+            int newInv = clamp(curStepInv + bestDelta, -4, 4);
+            NT_setParameterFromAudio(idx, stepParam(s, kStepInversion) + off, newInv);
+        }
+
+        // Use the winning buffer as prevBuf (computed before any v[] mutation)
+        prevBuf = bestBuf;
+    }
+}
+
 void randomizeSequence(uint32_t& randState, const int16_t* v,
-                       uint32_t idx, uint32_t off, float& stepDuration) {
+                       uint32_t idx, uint32_t off, float& stepDuration,
+                       StepState* stepStates) {
     int contour = v[kParamRandomContour];
 
     // Sequence length randomization (Steps, ClockDiv, Hold)
@@ -203,4 +322,6 @@ void randomizeSequence(uint32_t& randState, const int16_t* v,
                                      randRange(randState, 1, repMax));
         }
     }
+
+    voiceLeadPass(v, idx, off, stepStates);
 }
