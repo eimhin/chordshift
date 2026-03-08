@@ -30,7 +30,9 @@ static const char* const playModeStrings[] = {"Forward", "Reverse", "Pendulum", 
 static const char* const clockDivStrings[] = {"/1", "/2", "/3", "/4", "/6", "/8", "/12", "/16", NULL};
 static const char* const templateStrings[] = {"Custom", "Note", "Fifth", "Triad", "7th",
                                               "Sus2", "Sus4", "Shell", "Quartal", "Cluster", NULL};
-static const char* const contourStrings[] = {"Random", "Arc", "Rise", "Fall", NULL};
+static const char* const contourStrings[] = {"Random", "Arc", "Rise", "Fall",
+                                              "Plateau", "Sentence", "Return", "Flat",
+                                              "V-shape", "Late Bloom", "Period", "Converge", NULL};
 static const char* const seqLenStrings[] = {"None", "8", "16", "32", "64", "128", "256", NULL};
 static const char* const seqDivStrings[] = {"None", "1", "2", "4", "8", "16", "32", NULL};
 static const char* const seqHoldStrings[] = {"Varied", "Uniform", NULL};
@@ -128,7 +130,7 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Reset All", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
 
     // Randomize (34-46)
-    {.name = "Contour", .min = 0, .max = 3, .def = 1, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = contourStrings},
+    {.name = "Contour", .min = 0, .max = 11, .def = 1, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = contourStrings},
     {.name = "Randomize", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Seq Length", .min = 0, .max = 6, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqLenStrings},
     {.name = "Seq Div", .min = 0, .max = 6, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqDivStrings},
@@ -186,12 +188,11 @@ static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParam
 
 // Page 7: Randomize
 static const uint8_t pageRandomize[] = {
-    kParamRandomize, kParamRandomContour,
+    kParamRandomize, kParamRandomContour, kParamRandVoiceLead,
     kParamRandSeqLen, kParamRandSeqDiv, kParamRandSeqHold,
     kParamRandTemplate, kParamRandTranspose,
     kParamRandInversion, kParamRandRotation, kParamRandSpread,
-    kParamRandReverse, kParamRandGate, kParamRandRepeat,
-    kParamRandVoiceLead
+    kParamRandReverse, kParamRandGate, kParamRandRepeat
 };
 
 // ============================================================================

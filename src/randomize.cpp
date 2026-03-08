@@ -6,9 +6,16 @@
 #include "scales.h"
 #include <distingnt/api.h>
 
-static const int8_t contourArc[NUM_STEPS]  = {-4, -1,  2,  4,  5,  3,  0, -3};
-static const int8_t contourRise[NUM_STEPS] = {-5, -3, -2,  0,  1,  2,  4,  5};
-static const int8_t contourFall[NUM_STEPS] = { 5,  4,  2,  1,  0, -2, -3, -5};
+static const int8_t contourArc[NUM_STEPS]      = {-4, -1,  2,  4,  5,  3,  0, -3};
+static const int8_t contourRise[NUM_STEPS]     = {-5, -3, -2,  0,  1,  2,  4,  5};
+static const int8_t contourFall[NUM_STEPS]     = { 5,  4,  2,  1,  0, -2, -3, -5};
+static const int8_t contourPlateau[NUM_STEPS]  = {-4, -1,  2,  4,  4,  2, -1, -4};
+static const int8_t contourSentence[NUM_STEPS] = { 0,  0,  2,  4,  5,  3,  1, -2};
+static const int8_t contourReturn[NUM_STEPS]   = { 0,  3,  0,  4,  0,  5,  0, -2};
+static const int8_t contourVshape[NUM_STEPS]   = { 4,  1, -2, -4, -5, -3,  0,  3};
+static const int8_t contourLate[NUM_STEPS]     = { 0,  0,  0, -1, -1,  1,  3,  5};
+static const int8_t contourPeriod[NUM_STEPS]   = { 0,  2,  4, -1,  0,  2,  5, -2};
+static const int8_t contourConverge[NUM_STEPS] = { 5, -4,  3, -2,  1, -1,  0,  0};
 
 static const int seqLenValues[] = {0, 8, 16, 32, 64, 128, 256};
 static const int seqDivValues[] = {1, 1, 2, 4, 8, 16, 32};
@@ -17,9 +24,24 @@ static void randomizeSequenceLength(uint32_t& randState, const int16_t* v,
                                     uint32_t idx, uint32_t off,
                                     float& stepDuration) {
     int seqLenEnum = clamp(v[kParamRandSeqLen], 0, 6);
-    if (seqLenEnum == 0) return;
+    bool lockSteps = (seqLenEnum == 0);
+    int fixedSteps = clamp(v[kParamStepCount], 1, NUM_STEPS);
 
-    int seqLen = seqLenValues[seqLenEnum];
+    // When Seq Length is None, derive a target from multiples of current steps
+    int seqLen;
+    if (lockSteps) {
+        int candidates[6];
+        int numCandidates = 0;
+        for (int i = 1; i <= 6; i++) {
+            if (seqLenValues[i] > 32) break;
+            if (seqLenValues[i] % fixedSteps == 0)
+                candidates[numCandidates++] = seqLenValues[i];
+        }
+        if (numCandidates == 0) return;
+        seqLen = candidates[randRange(randState, 0, numCandidates - 1)];
+    } else {
+        seqLen = seqLenValues[seqLenEnum];
+    }
     int seqDiv = seqDivValues[clamp(v[kParamRandSeqDiv], 0, 6)];
     bool uniform = v[kParamRandSeqHold] == 1;
 
@@ -40,7 +62,7 @@ static void randomizeSequenceLength(uint32_t& randState, const int16_t* v,
         int cd = CLOCK_DIV_VALUES[divIdx];
         int holdUnit = seqDiv / gcd(cd, seqDiv);
         int maxHoldPerStep = (8 / holdUnit) * holdUnit;
-        int steps = randRange(randState, 1, NUM_STEPS);
+        int steps = lockSteps ? fixedSteps : randRange(randState, 1, NUM_STEPS);
 
         int minSum = steps * holdUnit;
         int maxSum = steps * maxHoldPerStep;
@@ -70,7 +92,8 @@ static void randomizeSequenceLength(uint32_t& randState, const int16_t* v,
 
         // Apply steps and clockDiv
         int oldDiv = CLOCK_DIV_VALUES[clamp(v[kParamClockDiv], 0, NUM_CLOCK_DIV_VALUES - 1)];
-        NT_setParameterFromAudio(idx, kParamStepCount + off, steps);
+        if (!lockSteps)
+            NT_setParameterFromAudio(idx, kParamStepCount + off, steps);
         NT_setParameterFromAudio(idx, kParamClockDiv + off, divIdx);
         if (oldDiv > 0)
             stepDuration = stepDuration * (float)cd / (float)oldDiv;
@@ -225,6 +248,7 @@ void randomizeSequence(uint32_t& randState, const int16_t* v,
     // Sequence length randomization (Steps, ClockDiv, Hold)
     randomizeSequenceLength(randState, v, idx, off, stepDuration);
 
+    int stepCount  = clamp(v[kParamStepCount], 1, NUM_STEPS);
     int dTranspose = clamp(v[kParamRandTranspose], 0, 100);
     int dInversion = clamp(v[kParamRandInversion], 0, 100);
     int dRotation  = clamp(v[kParamRandRotation],  0, 100);
@@ -260,15 +284,41 @@ void randomizeSequence(uint32_t& randState, const int16_t* v,
         if (dTranspose > 0) {
             int transpose;
             int range = (5 * dTranspose + 50) / 100;
+            // Scale contour index so full shape fits active step count
+            int ci = (stepCount > 1) ? s * (NUM_STEPS - 1) / (stepCount - 1) : 0;
             switch (contour) {
             case 1: // Arc
-                transpose = clamp(contourArc[s] + randRange(randState, -1, 1), -range, range);
+                transpose = clamp(contourArc[ci] + randRange(randState, -1, 1), -range, range);
                 break;
             case 2: // Rise
-                transpose = clamp(contourRise[s] + randRange(randState, -1, 1), -range, range);
+                transpose = clamp(contourRise[ci] + randRange(randState, -1, 1), -range, range);
                 break;
             case 3: // Fall
-                transpose = clamp(contourFall[s] + randRange(randState, -1, 1), -range, range);
+                transpose = clamp(contourFall[ci] + randRange(randState, -1, 1), -range, range);
+                break;
+            case 4: // Plateau
+                transpose = clamp(contourPlateau[ci] + randRange(randState, -1, 1), -range, range);
+                break;
+            case 5: // Sentence
+                transpose = clamp(contourSentence[ci] + randRange(randState, -1, 1), -range, range);
+                break;
+            case 6: // Return
+                transpose = clamp(contourReturn[ci] + randRange(randState, -1, 1), -range, range);
+                break;
+            case 7: // Flat
+                transpose = clamp(randRange(randState, -1, 1), -range, range);
+                break;
+            case 8: // V-shape
+                transpose = clamp(contourVshape[ci] + randRange(randState, -1, 1), -range, range);
+                break;
+            case 9: // Late Bloom
+                transpose = clamp(contourLate[ci] + randRange(randState, -1, 1), -range, range);
+                break;
+            case 10: // Period
+                transpose = clamp(contourPeriod[ci] + randRange(randState, -1, 1), -range, range);
+                break;
+            case 11: // Converge
+                transpose = clamp(contourConverge[ci] + randRange(randState, -1, 1), -range, range);
                 break;
             default: // Random
                 transpose = randRange(randState, -range, range);
