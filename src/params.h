@@ -37,6 +37,9 @@ static const char* const seqLenStrings[] = {"None", "8", "16", "32", "64", "128"
 static const char* const seqDivStrings[] = {"None", "1", "2", "4", "8", "16", "32", NULL};
 static const char* const seqHoldStrings[] = {"Varied", "Uniform", NULL};
 static const char* const randTemplateStrings[] = {"Off", "5th", "Triad", "7th", "5th+Tri", "5th+7th", "Tri+7th", "All", NULL};
+static const char* const driftIntervalStrings[] = {"Off", "4", "8", "16", "32", "64", "128", NULL};
+static const char* const driftStyleStrings[] = {"Neighbor", "Functional", "Orbit", NULL};
+static const char* const driftScopeStrings[] = {"Focused", "Distributed", NULL};
 // ============================================================================
 // STEP PARAMETER MACRO
 // ============================================================================
@@ -151,6 +154,12 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Ext Depth", .min = 0, .max = 4, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Ext Color", .min = 0, .max = 100, .def = 50, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
 
+    // Drift (53-56)
+    {.name = "Drift", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
+    {.name = "Drift Interval", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftIntervalStrings},
+    {.name = "Drift Style", .min = 0, .max = 2, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftStyleStrings},
+    {.name = "Drift Scope", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftScopeStrings},
+
     // Per-step parameters
     STEP_PARAMS  // Step 1
     STEP_PARAMS  // Step 2
@@ -192,7 +201,10 @@ static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNor
 // Page 6: Articulate
 static const uint8_t pageArticulate[] = {kParamHumanize, kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamVelDeviation, kParamTimeCurve, kParamTimeDepth};
 
-// Page 7: Randomize
+// Page 7: Drift
+static const uint8_t pageDrift[] = {kParamDriftAmount, kParamDriftInterval, kParamDriftStyle, kParamDriftScope};
+
+// Page 8: Randomize
 static const uint8_t pageRandomize[] = {
     kParamRandomize, kParamRandomContour, kParamRandVoiceLead,
     kParamRandSeqLen, kParamRandSeqDiv, kParamRandSeqHold,
@@ -219,10 +231,11 @@ static const GlobalPageInfo globalPages[] = {
     {"Pitch",      pagePitch,      ARRAY_SIZE(pagePitch)},
     {"Voicing",    pageVoicing,    ARRAY_SIZE(pageVoicing)},
     {"Articulate", pageArticulate, ARRAY_SIZE(pageArticulate)},
+    {"Drift",      pageDrift,      ARRAY_SIZE(pageDrift)},
     {"Randomize",  pageRandomize,  ARRAY_SIZE(pageRandomize)},
 };
 
-static constexpr int NUM_GLOBAL_PAGES = 8;
+static constexpr int NUM_GLOBAL_PAGES = 9;
 static_assert(sizeof(globalPages) / sizeof(globalPages[0]) == NUM_GLOBAL_PAGES,
               "globalPages[] size must match NUM_GLOBAL_PAGES");
 

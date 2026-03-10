@@ -10,6 +10,7 @@
  */
 
 #include "playback.h"
+#include "drift.h"
 #include "math.h"
 #include "midi.h"
 #include "random.h"
@@ -108,6 +109,7 @@ void handleTransportStart(ChordshiftAlgorithm* alg) {
     // Preserve stepDuration from previous run so first chord gate is accurate
     dtc->msAccum = 0.0f;
     dtc->transportState = TRANSPORT_RUNNING;
+    resetDrift(dtc);
 }
 
 void handleTransportStop(ChordshiftAlgorithm* alg) {
@@ -123,6 +125,7 @@ void handleTransportStop(ChordshiftAlgorithm* alg) {
     dtc->clockDivCounter = 0;
     dtc->stepHoldCounter = 0;
     dtc->stepTime = 0.0f;
+    resetDrift(dtc);
 }
 
 // ============================================================================
@@ -170,6 +173,10 @@ void processClockTick(ChordshiftAlgorithm* alg) {
 
     // Set hold counter for this step
     dtc->stepHoldCounter = (uint8_t)(sp.hold() - 1);
+
+    // Evaluate drift before probability so interval phase stays consistent
+    evaluateDrift(alg);
+
     int prob = sp.probability();
     if (prob < 100) {
         if ((int)(randFloat(alg->randState) * 100.0f) >= prob) {
@@ -193,6 +200,9 @@ void processClockTick(ChordshiftAlgorithm* alg) {
         for (int i = 0; i < buf.count; i++)
             buf.degrees[i] = ss->baseChord.degrees[i];
     }
+
+    // Apply drift offset to chord
+    applyDrift(&buf, dtc->driftOffset[nextStep]);
 
     // Apply extensions (before transform pipeline)
     applyExtensions(&buf, v);

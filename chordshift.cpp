@@ -18,6 +18,7 @@
 
 // Module headers
 #include "capture.h"
+#include "drift.h"
 #include "math.h"
 #include "midi.h"
 #include "midi_utils.h"
@@ -51,6 +52,7 @@ _NT_algorithm* construct(const _NT_algorithmMemoryPtrs& ptrs, const _NT_algorith
     // Initialize DTC (memset zeros all fields; only set non-zero values after)
     memset(dtc, 0, sizeof(Chordshift_DTC));
     dtc->stepDuration = 0.1f;
+    dtc->focusedDriftStep = -1;
 
     // Initialize step states in DRAM
     for (int s = 0; s < NUM_STEPS; s++) {
@@ -261,6 +263,7 @@ void step(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
             alg->stepStates[s].baseChord.count = 0;
             alg->stepStates[s].lastRendered.count = 0;
         }
+        resetDrift(dtc);
     }
     dtc->lastResetAll = (int16_t)resetAll;
 

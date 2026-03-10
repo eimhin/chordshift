@@ -143,7 +143,12 @@ enum {
     kParamExtDepth,
     kParamExtColor,
 
-    kGlobalParamCount  // = 53
+    kParamDriftAmount,
+    kParamDriftInterval,
+    kParamDriftStyle,
+    kParamDriftScope,
+
+    kGlobalParamCount  // = 57
 };
 
 // Per-step parameter offsets
@@ -320,6 +325,11 @@ struct Chordshift_DTC {
     uint8_t captureCount;
     uint8_t snapshotCount;
     uint8_t inputVel;
+
+    // Drift state
+    int8_t driftOffset[NUM_STEPS];   // per-step drift transpose (0 = no drift)
+    uint16_t driftStepCounter;       // steps since last drift evaluation
+    int8_t focusedDriftStep;         // current focus target (-1 = none)
 
     // UI frame counter for blink effects
     uint16_t drawFrameCount;

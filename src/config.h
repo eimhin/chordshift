@@ -31,11 +31,11 @@ static constexpr int MAX_DELAYED_NOTES = 64;   // Strum delay buffer size
 // ============================================================================
 
 static constexpr int PARAMS_PER_STEP = 18;     // Parameters per step
-static constexpr int GLOBAL_PARAMS = 53;       // Global parameters
+static constexpr int GLOBAL_PARAMS = 57;       // Global parameters
 
 // Derived constants
 static constexpr int MAX_TOTAL_PARAMS = GLOBAL_PARAMS + (PARAMS_PER_STEP * NUM_STEPS);
-static constexpr int MAX_PAGES = 9 + NUM_STEPS; // 9 global pages + step pages
+static constexpr int MAX_PAGES = 10 + NUM_STEPS; // 10 global pages + step pages
 
 // ============================================================================
 // COMPILE-TIME VALIDATION
