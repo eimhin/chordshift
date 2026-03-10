@@ -1,5 +1,6 @@
 #include "randomize.h"
 #include "config.h"
+#include "extensions.h"
 #include "math.h"
 #include "random.h"
 #include "transforms.h"
@@ -186,6 +187,7 @@ static void voiceLeadPass(const int16_t* v, uint32_t idx, uint32_t off,
     DegreeBuffer prevBuf;
     buildStepChord(&prevBuf, v, 0, stepStates);
     if (prevBuf.count == 0) return;
+    applyExtensions(&prevBuf, v);
     applyPitchTransforms(&prevBuf, v, 0);
 
     for (int s = 1; s < stepCount; s++) {
@@ -198,6 +200,7 @@ static void voiceLeadPass(const int16_t* v, uint32_t idx, uint32_t off,
         curBuf.count = baseBuf.count;
         for (int i = 0; i < baseBuf.count; i++)
             curBuf.degrees[i] = baseBuf.degrees[i];
+        applyExtensions(&curBuf, v);
         applyPitchTransforms(&curBuf, v, s);
 
         // Read current per-step inversion
@@ -218,6 +221,7 @@ static void voiceLeadPass(const int16_t* v, uint32_t idx, uint32_t off,
             trial.count = baseBuf.count;
             for (int i = 0; i < baseBuf.count; i++)
                 trial.degrees[i] = baseBuf.degrees[i];
+            applyExtensions(&trial, v);
             applyPitchTransforms(&trial, v, s);
             applyInversion(&trial, delta, scaleType);
 

@@ -103,8 +103,10 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     // Order (18-19)
     {.name = "Direction", .min = 0, .max = 8, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = directionStrings},
     {.name = "Reverse", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
+    {.name = "Density", .min = 0, .max = 100, .def = 100, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
-    // Articulation (20-23)
+    // Articulation (21-27)
+    {.name = "Humanize", .min = 0, .max = 50, .def = 0, .unit = kNT_unitMs, .scaling = 0, .enumStrings = NULL},
     {.name = "Strum", .min = 0, .max = 100, .def = 0, .unit = kNT_unitMs, .scaling = 0, .enumStrings = NULL},
     {.name = "Vel Shape", .min = 0, .max = 4, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = velCurveStrings},
     {.name = "Vel Depth", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
@@ -114,7 +116,7 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Time Shape", .min = 0, .max = 5, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = timeCurveStrings},
     {.name = "Time Depth", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
-    // Playback (26-28)
+    // Playback (27-29)
     {.name = "Play Mode", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = playModeStrings},
     {.name = "Steps", .min = 1, .max = 8, .def = 8, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Clock Div", .min = 0, .max = 7, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = clockDivStrings},
@@ -145,7 +147,11 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Repeat", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Voice Lead", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = offOnStrings},
 
-    // Per-step parameters (47 + 15*8 = 167 total)
+    // Extensions (51-52)
+    {.name = "Ext Depth", .min = 0, .max = 4, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
+    {.name = "Ext Color", .min = 0, .max = 100, .def = 50, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
+
+    // Per-step parameters
     STEP_PARAMS  // Step 1
     STEP_PARAMS  // Step 2
     STEP_PARAMS  // Step 3
@@ -181,10 +187,10 @@ static const uint8_t pagePlayback[] = {kParamPlayMode, kParamStepCount, kParamCl
 static const uint8_t pagePitch[] = {kParamTranspose, kParamReflectMode, kParamSpreadAmount, kParamSpreadAnchor};
 
 // Page 5: Voicing
-static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNormalize, kParamDirection, kParamReverse};
+static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNormalize, kParamDirection, kParamReverse, kParamDensity, kParamExtDepth, kParamExtColor};
 
 // Page 6: Articulate
-static const uint8_t pageArticulate[] = {kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamVelDeviation, kParamTimeCurve, kParamTimeDepth};
+static const uint8_t pageArticulate[] = {kParamHumanize, kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamVelDeviation, kParamTimeCurve, kParamTimeDepth};
 
 // Page 7: Randomize
 static const uint8_t pageRandomize[] = {

@@ -10,7 +10,8 @@ SOURCES = chordshift.cpp \
           src/ui.cpp \
           src/serial.cpp \
           src/scales.cpp \
-          src/randomize.cpp
+          src/randomize.cpp \
+          src/extensions.cpp
 
 CXX = arm-none-eabi-g++
 CFLAGS = -std=c++11 \

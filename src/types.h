@@ -108,6 +108,8 @@ enum {
     kParamNormalize,
     kParamDirection,
     kParamReverse,
+    kParamDensity,
+    kParamHumanize,
     kParamStrumTime,
     kParamVelCurve,
     kParamVelDepth,
@@ -138,7 +140,10 @@ enum {
     kParamRandRepeat,
     kParamRandVoiceLead,
 
-    kGlobalParamCount  // = 49
+    kParamExtDepth,
+    kParamExtColor,
+
+    kGlobalParamCount  // = 53
 };
 
 // Per-step parameter offsets

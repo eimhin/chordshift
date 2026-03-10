@@ -13,6 +13,7 @@
 #include "math.h"
 #include "midi.h"
 #include "random.h"
+#include "extensions.h"
 #include "render.h"
 #include "transforms.h"
 
@@ -192,6 +193,9 @@ void processClockTick(ChordshiftAlgorithm* alg) {
         for (int i = 0; i < buf.count; i++)
             buf.degrees[i] = ss->baseChord.degrees[i];
     }
+
+    // Apply extensions (before transform pipeline)
+    applyExtensions(&buf, v);
 
     // Apply transform pipeline
     applyTransforms(&buf, v, nextStep, alg->randState);
