@@ -38,8 +38,14 @@ struct ExtCandidate {
 };
 
 void applyExtensions(DegreeBuffer* buf, const int16_t* v) {
-    int depth = v[kParamExtDepth];
-    int colorAmount = v[kParamExtColor];
+    applyExtensions(buf, v, -1, -1);
+}
+
+void applyExtensions(DegreeBuffer* buf, const int16_t* v, int depthOverride, int colorOverride) {
+    int depth = depthOverride >= 0 ? depthOverride : v[kParamExtDepth];
+    int colorAmount = colorOverride >= 0 ? colorOverride : v[kParamExtColor];
+    if (colorAmount < 0) colorAmount = 0;
+    if (colorAmount > 100) colorAmount = 100;
 
     if (depth <= 0 || buf->count == 0) return;
 

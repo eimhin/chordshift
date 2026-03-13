@@ -148,7 +148,12 @@ enum {
     kParamDriftStyle,
     kParamDriftScope,
 
-    kGlobalParamCount  // = 57
+    kParamOctRandom,
+    kParamOctRandomInterval,
+    kParamInvRandom,
+    kParamInvRandomInterval,
+
+    kGlobalParamCount  // = 61
 };
 
 // Per-step parameter offsets
@@ -330,6 +335,10 @@ struct Chordshift_DTC {
     int8_t driftOffset[NUM_STEPS];   // per-step drift transpose (0 = no drift)
     uint16_t driftStepCounter;       // steps since last drift evaluation
     int8_t focusedDriftStep;         // current focus target (-1 = none)
+
+    // Global oct/inv random interval counters
+    uint16_t octRandomCounter;
+    uint16_t invRandomCounter;
 
     // UI frame counter for blink effects
     uint16_t drawFrameCount;

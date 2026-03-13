@@ -105,6 +105,8 @@ void handleTransportStart(ChordshiftAlgorithm* alg) {
     dtc->firstTick = true;
     dtc->clockDivCounter = 0;
     dtc->stepHoldCounter = 0;
+    dtc->octRandomCounter = 0;
+    dtc->invRandomCounter = 0;
     dtc->stepTime = 0.0f;
     // Preserve stepDuration from previous run so first chord gate is accurate
     dtc->msAccum = 0.0f;
@@ -124,6 +126,8 @@ void handleTransportStop(ChordshiftAlgorithm* alg) {
     dtc->firstTick = false;
     dtc->clockDivCounter = 0;
     dtc->stepHoldCounter = 0;
+    dtc->octRandomCounter = 0;
+    dtc->invRandomCounter = 0;
     dtc->stepTime = 0.0f;
     resetDrift(dtc);
 }
@@ -201,14 +205,23 @@ void processClockTick(ChordshiftAlgorithm* alg) {
             buf.degrees[i] = ss->baseChord.degrees[i];
     }
 
-    // Apply drift offset to chord
-    applyDrift(&buf, dtc->driftOffset[nextStep]);
-
-    // Apply extensions (before transform pipeline)
-    applyExtensions(&buf, v);
+    // Apply drift and extensions
+    int driftStyle = v[kParamDriftStyle];
+    if (driftStyle == 3 && v[kParamDriftInterval] > 0 && v[kParamDriftAmount] > 0) {
+        // Color drift: offset controls extension color instead of transposing
+        int color = clamp(50 + dtc->driftOffset[nextStep] * DRIFT_COLOR_SCALE, 0, 100);
+        applyExtensions(&buf, v, 4, color);
+    } else {
+        applyDrift(&buf, dtc->driftOffset[nextStep]);
+        applyExtensions(&buf, v);
+    }
 
     // Apply transform pipeline
-    applyTransforms(&buf, v, nextStep, alg->randState);
+    applyTransforms(&buf, v, nextStep, alg->randState, dtc);
+
+    // Increment global random interval counters (after read, so counter=0 fires on first step)
+    dtc->octRandomCounter++;
+    dtc->invRandomCounter++;
 
     // Render to MIDI (scale gate duration by hold value)
     RenderedChord rendered;

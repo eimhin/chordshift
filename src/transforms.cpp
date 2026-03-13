@@ -12,6 +12,7 @@
  * - Transpose, Inversion, Rotation, Spread, Strum: additive (global + step)
  * - Reverse: XOR (global ^ step)
  * - Reflect, Direction: override (step replaces global if nonzero)
+ * - Oct Random, Inv Random: additive (global + step), global gated by interval counter
  */
 
 #include "transforms.h"
@@ -377,7 +378,7 @@ void applyPitchTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx) {
     applyNormalize(buf, normalize);
 }
 
-void applyTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx, uint32_t& randState) {
+void applyTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx, uint32_t& randState, const Chordshift_DTC* dtc) {
     if (buf->count == 0) return;
 
     StepParams sp = StepParams::fromAlgorithm(v, stepIdx);
@@ -408,19 +409,41 @@ void applyTransforms(DegreeBuffer* buf, const int16_t* v, int stepIdx, uint32_t&
 
     // Stage 2: Voicing
     applyInversion(buf, inversion, scaleType);
-    applyInvRandom(buf, sp.invRandom(), scaleType, randState);
+
+    // Inv Random: additive, gated by interval counter
+    int invRandom = sp.invRandom();
+    if (v[kParamInvRandom] != 0) {
+        int interval = v[kParamInvRandomInterval];
+        if (interval == 0 || (dtc->invRandomCounter % interval == 0)) {
+            invRandom += v[kParamInvRandom];
+        }
+    }
+    if (invRandom > 100) invRandom = 100;
+    if (invRandom < -100) invRandom = -100;
+    applyInvRandom(buf, invRandom, scaleType, randState);
+
     applyRotation(buf, rotation);
 
     // Stage 3: Normalize
     applyNormalize(buf, normalize);
 
-    // Oct Random: after normalize, before order
-    applyOctRandom(buf, sp.octRandom(), randState);
+    // Oct Random: additive, gated by interval counter
+    int octRandom = sp.octRandom();
+    if (v[kParamOctRandom] != 0) {
+        int interval = v[kParamOctRandomInterval];
+        if (interval == 0 || (dtc->octRandomCounter % interval == 0)) {
+            octRandom += v[kParamOctRandom];
+        }
+    }
+    if (octRandom > 100) octRandom = 100;
+    if (octRandom < -100) octRandom = -100;
+    applyOctRandom(buf, octRandom, randState);
 
     // Stage 4: Order
     if (reverse) applyReverse(buf);
     applyDirection(buf, direction, randState);
 
-    // Density: after order, as final transform
-    applyDensity(buf, sp.density(), randState);
+    // Density: multiplicative (global * step / 100), after order as final transform
+    int density = (v[kParamDensity] * sp.density()) / 100;
+    applyDensity(buf, density, randState);
 }

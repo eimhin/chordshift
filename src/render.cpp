@@ -94,6 +94,7 @@ void renderChord(RenderedChord* out, const DegreeBuffer* buf, const int16_t* v,
     int velCurve = v[kParamVelCurve];
     int velDepth = v[kParamVelDepth];
     int velDeviation = v[kParamVelDeviation];
+    int humanize = v[kParamHumanize];
     int strumTime = v[kParamStrumTime] + sp.strumTime();  // additive
     int timeCurve = v[kParamTimeCurve];
     int timeDepth = v[kParamTimeDepth];
@@ -131,6 +132,9 @@ void renderChord(RenderedChord* out, const DegreeBuffer* buf, const int16_t* v,
 
             // Calculate strum delay with time curve
             uint16_t delay = strumDelay(i, buf->count, strumTime, timeCurve, timeDepth, randState);
+            if (humanize > 0) {
+                delay += (uint16_t)randRange(randState, 0, humanize);
+            }
             delay += ratchetOffset;
 
             RenderedNote* rn = &out->notes[out->count];
