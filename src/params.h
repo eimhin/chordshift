@@ -76,70 +76,70 @@ static const char* const breathScopeStrings[] = {"All Inner", "Rand Voice", "Top
 // ============================================================================
 
 static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
-    // Routing parameters (0-1)
+    // Routing
     NT_PARAMETER_CV_INPUT("Run", 0, 1)
     NT_PARAMETER_CV_INPUT("Clock", 0, 2)
 
-    // Record/Edit (2-4)
+    // Record/Edit
     {.name = "Record", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = offOnStrings},
     {.name = "Edit Step", .min = 1, .max = 8, .def = 1, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
 
-    // MIDI (4-6)
+    // MIDI
     {.name = "MIDI In Ch", .min = 0, .max = 16, .def = 1, .unit = kNT_unitHasStrings, .scaling = 0, .enumStrings = NULL},
     {.name = "MIDI Out Ch", .min = 1, .max = 16, .def = 2, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Destination", .min = 0, .max = 4, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = midiDestStrings},
 
-    // Output (7)
+    // Output
     {.name = "Velocity", .min = 1, .max = 127, .def = 100, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
 
-    // Scale (8-10)
+    // Scale
     {.name = "Root", .min = 0, .max = 11, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleRootStrings},
     {.name = "Scale", .min = 0, .max = 10, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = scaleTypeStrings},
     {.name = "Octave", .min = 1, .max = 8, .def = 6, .unit = kNT_unitHasStrings, .scaling = 0, .enumStrings = NULL},
 
-    // Pitch transforms (11-14)
+    // Pitch
     {.name = "Transpose", .min = -14, .max = 14, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Reflect", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = reflectStrings},
     {.name = "Spread", .min = -7, .max = 7, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Spread Anchor", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = anchorStrings},
 
-    // Voicing (15-17)
+    // Voicing
     {.name = "Inversion", .min = -4, .max = 4, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Rotation", .min = -7, .max = 7, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Normalize", .min = 0, .max = 2, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = normalizeStrings},
 
-    // Order (18-19)
+    // Order
     {.name = "Direction", .min = 0, .max = 8, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = directionStrings},
     {.name = "Reverse", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Density", .min = 0, .max = 100, .def = 100, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
-    // Articulation (21-27)
+    // Articulation
     {.name = "Humanize", .min = 0, .max = 50, .def = 0, .unit = kNT_unitMs, .scaling = 0, .enumStrings = NULL},
     {.name = "Strum", .min = 0, .max = 100, .def = 0, .unit = kNT_unitMs, .scaling = 0, .enumStrings = NULL},
     {.name = "Vel Shape", .min = 0, .max = 4, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = velCurveStrings},
     {.name = "Vel Depth", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Vel Deviation", .min = 0, .max = 100, .def = 5, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
-    // Time curve (24-25)
+    // Time curve
     {.name = "Time Shape", .min = 0, .max = 5, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = timeCurveStrings},
     {.name = "Time Depth", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
 
-    // Playback (27-29)
+    // Playback
     {.name = "Play Mode", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = playModeStrings},
     {.name = "Steps", .min = 1, .max = 8, .def = 8, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Clock Div", .min = 0, .max = 7, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = clockDivStrings},
 
-    // Capture (28)
+    // Capture
     {.name = "Capture Norm", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = offOnStrings},
 
-    // Triggers (29-32)
+    // Triggers
     {.name = "Clear Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Clear All", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Copy Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Paste Step", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Reset All", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
 
-    // Randomize (34-46)
+    // Randomize
     {.name = "Contour", .min = 0, .max = 11, .def = 1, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = contourStrings},
     {.name = "Randomize", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = noYesStrings},
     {.name = "Seq Length", .min = 0, .max = 6, .def = 3, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = seqLenStrings},
