@@ -16,7 +16,6 @@
 // CONSTANTS
 // ============================================================================
 
-static constexpr int BREATH_MIN_GAP = 2;
 static constexpr int BREATH_TABLE_LEN = 8;
 static constexpr int BREATH_SHAPE_RANDOM = 3;
 static constexpr int BREATH_SHAPE_WALK = 5;
@@ -56,12 +55,6 @@ static const int8_t breathTables[][BREATH_TABLE_LEN] = {
 // INTERVAL CONVERSION
 // ============================================================================
 
-// Same table as getDriftIntervalSteps() in drift.cpp
-static int getBreathRateSteps(int enumVal) {
-    static const int table[] = {0, 4, 8, 16, 32, 64, 128};
-    if (enumVal < 0 || enumVal > 6) return 0;
-    return table[enumVal];
-}
 
 // ============================================================================
 // OFFSET COMPUTATION
@@ -94,14 +87,15 @@ static int computeBreathOffset(int shape, int amount, int phase, int period,
 
 // Returns true if applying offset to voice at voiceIdx would violate the
 // minimum gap against any other voice in the buffer.
-static bool wouldViolateGap(const int16_t* degrees, int count, int voiceIdx, int offset) {
+static bool wouldViolateGap(const int16_t* degrees, int count, int voiceIdx, int offset, int minGap) {
+    if (minGap <= 0) return false;
     int newDeg = degrees[voiceIdx] + offset;
     for (int i = 0; i < count; i++) {
         if (i == voiceIdx) continue;
         int other = degrees[i];
         int diff = newDeg - other;
         if (diff < 0) diff = -diff;
-        if (diff < BREATH_MIN_GAP) return true;
+        if (diff < minGap) return true;
     }
     return false;
 }
@@ -133,9 +127,8 @@ void applyBreathing(DegreeBuffer* buf, const int16_t* v, Chordshift_DTC* dtc, ui
     int amount = v[kParamBreathAmount];
     if (amount <= 0) return;
 
-    int rateEnum = v[kParamBreathRate];
-    int period = getBreathRateSteps(rateEnum);
-    if (period == 0) return;
+    int period = v[kParamBreathRate];
+    if (period <= 0) return;
 
     if (buf->count <= 1) return;
 
@@ -148,6 +141,7 @@ void applyBreathing(DegreeBuffer* buf, const int16_t* v, Chordshift_DTC* dtc, ui
 
     int shape = clamp((int)v[kParamBreathShape], 0, 17);
     int scope = clamp((int)v[kParamBreathScope], 0, 3);
+    int minGap = v[kParamBreathGap];
 
     int offset = computeBreathOffset(shape, amount, phase, period, dtc, randState);
     if (offset == 0) return;
@@ -164,7 +158,7 @@ void applyBreathing(DegreeBuffer* buf, const int16_t* v, Chordshift_DTC* dtc, ui
             // Apply offset to all voices except the lowest
             for (int i = 1; i < buf->count; i++) {
                 int vi = sorted[i];
-                if (!wouldViolateGap(buf->degrees, buf->count, vi, offset)) {
+                if (!wouldViolateGap(buf->degrees, buf->count, vi, offset, minGap)) {
                     buf->degrees[vi] += (int16_t)offset;
                 }
             }
@@ -175,7 +169,7 @@ void applyBreathing(DegreeBuffer* buf, const int16_t* v, Chordshift_DTC* dtc, ui
             if (buf->count <= 1) break;
             int pick = randRange(randState, 1, buf->count - 1);
             int vi = sorted[pick];
-            if (!wouldViolateGap(buf->degrees, buf->count, vi, offset)) {
+            if (!wouldViolateGap(buf->degrees, buf->count, vi, offset, minGap)) {
                 buf->degrees[vi] += (int16_t)offset;
             }
             break;
@@ -183,7 +177,7 @@ void applyBreathing(DegreeBuffer* buf, const int16_t* v, Chordshift_DTC* dtc, ui
 
         case SCOPE_TOP_ONLY:
             // Apply only to the highest voice
-            if (!wouldViolateGap(buf->degrees, buf->count, highestIdx, offset)) {
+            if (!wouldViolateGap(buf->degrees, buf->count, highestIdx, offset, minGap)) {
                 buf->degrees[highestIdx] += (int16_t)offset;
             }
             break;
@@ -194,7 +188,7 @@ void applyBreathing(DegreeBuffer* buf, const int16_t* v, Chordshift_DTC* dtc, ui
             for (int i = 1; i < buf->count; i++) {
                 int vi = sorted[i];
                 int voiceOffset = ((i - 1) % 2 == 0) ? offset : -offset;
-                if (!wouldViolateGap(buf->degrees, buf->count, vi, voiceOffset)) {
+                if (!wouldViolateGap(buf->degrees, buf->count, vi, voiceOffset, minGap)) {
                     buf->degrees[vi] += (int16_t)voiceOffset;
                 }
             }

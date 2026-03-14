@@ -154,8 +154,9 @@ enum {
     kParamBreathRate,
     kParamBreathShape,
     kParamBreathScope,
+    kParamBreathGap,
 
-    kGlobalParamCount  // = 63
+    kGlobalParamCount  // = 64
 };
 
 // Per-step parameter offsets

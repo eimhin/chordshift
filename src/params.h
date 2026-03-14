@@ -40,7 +40,6 @@ static const char* const randTemplateStrings[] = {"Off", "5th", "Triad", "7th", 
 static const char* const driftIntervalStrings[] = {"Off", "4", "8", "16", "32", "64", "128", NULL};
 static const char* const driftStyleStrings[] = {"Neighbor", "Functional", "Orbit", "Suspend", "Wander", "Plateau", NULL};
 static const char* const driftScopeStrings[] = {"Focused", "Distributed", "Unison", "Anchor", "Cascade", "Spread", NULL};
-static const char* const breathRateStrings[] = {"Off", "4", "8", "16", "32", "64", "128", NULL};
 static const char* const breathShapeStrings[] = {"Triangle", "Square", "Ramp", "Random",
                                                   "Pendulum", "Walk", "Pulse", "Sigh",
                                                   "Bloom", "Alternate", "Converge", "Return",
@@ -171,9 +170,10 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
 
     // Breath
     {.name = "Breath", .min = 0, .max = 2, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
-    {.name = "Breath Rate", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = breathRateStrings},
+    {.name = "Breath Rate", .min = 0, .max = 64, .def = 0, .unit = kNT_unitNone},
     {.name = "Breath Shape", .min = 0, .max = 17, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = breathShapeStrings},
     {.name = "Breath Scope", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = breathScopeStrings},
+    {.name = "Breath Gap", .min = 0, .max = 7, .def = 2, .unit = kNT_unitNone},
 
     // Per-step parameters
     STEP_PARAMS  // Step 1
@@ -220,7 +220,7 @@ static const uint8_t pageArticulate[] = {kParamHumanize, kParamStrumTime, kParam
 static const uint8_t pageDrift[] = {kParamDriftAmount, kParamDriftInterval, kParamDriftStyle, kParamDriftScope};
 
 // Page 8: Breath
-static const uint8_t pageBreath[] = {kParamBreathAmount, kParamBreathRate, kParamBreathShape, kParamBreathScope};
+static const uint8_t pageBreath[] = {kParamBreathAmount, kParamBreathRate, kParamBreathShape, kParamBreathScope, kParamBreathGap};
 
 // Page 9: Randomize
 static const uint8_t pageRandomize[] = {
