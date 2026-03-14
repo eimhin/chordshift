@@ -83,24 +83,52 @@ Global pitch transforms — combined additively with per-step values.
 
 ### Voicing
 
-| Parameter | Range                     | Default | Description                          |
-| --------- | ------------------------- | ------- | ------------------------------------ |
-| Inversion | -4 – +4                                                                     | 0       | Move bottom/top notes across octaves                 |
-| Rotation  | -7 – +7                                                                     | 0       | Rotate the note order cyclically                     |
-| Normalize | None, Lowest=0, First=0                                                     | None    | Re-center degrees after transforms                   |
-| Direction | Up, Down, Pendulum, PingPong, Diverge, Converge, Random, Pedal Lo, Pedal Hi | Up      | Note playback order within the chord (affects strum) |
-| Reverse   | No, Yes                                                                     | No      | Reverse the note order                               |
+| Parameter    | Range                     | Default | Description                                                                  |
+| ------------ | ------------------------- | ------- | ---------------------------------------------------------------------------- |
+| Inversion    | -4 – +4                  | 0       | Move bottom/top notes across octaves                                         |
+| Rotation     | -7 – +7                  | 0       | Rotate the note order cyclically                                             |
+| Normalize    | None, Lowest=0, First=0  | None    | Re-center degrees after transforms                                           |
+| Density      | 0 – 100%                 | 100     | Probability each note in the chord sounds                                    |
+| Oct Random   | -100 – +100%             | 0       | Random octave displacement per note (positive = up bias, negative = down)    |
+| Oct Rnd Intv | 0 – 32                   | 0       | Minimum clock ticks between octave random re-rolls (0 = every step)          |
+| Inv Random   | -100 – +100%             | 0       | Random inversion per playback (positive = up bias, negative = down)          |
+| Inv Rnd Intv | 0 – 32                   | 0       | Minimum clock ticks between inversion random re-rolls (0 = every step)       |
 
 ### Articulate
 
-| Parameter  | Range                                           | Default | Description                                 |
-| ---------- | ----------------------------------------------- | ------- | ------------------------------------------- |
-| Strum      | 0 – 100 ms                                      | 0       | Delay between successive notes in the chord |
-| Vel Shape  | Ramp, Curve, Peak, Step, Random              | Ramp    | Velocity distribution across strummed notes |
-| Vel Depth  | 0 – 100%                                        | 0       | Amount of velocity curve applied            |
-| Vel Deviation | 0 – 100%                                     | 5       | Random velocity variation per note          |
-| Time Shape | Off, Ramp, Curve, Peak, Step, Random        | Off     | Strum timing distribution                   |
-| Time Depth | 0 – 100%                                        | 0       | Amount of time curve applied                |
+| Parameter     | Range                                                                       | Default | Description                                          |
+| ------------- | --------------------------------------------------------------------------- | ------- | ---------------------------------------------------- |
+| Humanize      | 0 – 50 ms                                                                  | 0       | Random timing offset per note                        |
+| Strum         | 0 – 100 ms                                                                 | 0       | Delay between successive notes in the chord          |
+| Direction     | Up, Down, Pendulum, PingPong, Diverge, Converge, Random, Pedal Lo, Pedal Hi | Up      | Note playback order within the chord (affects strum) |
+| Reverse       | No, Yes                                                                    | No      | Reverse the note order                               |
+| Vel Shape     | Ramp, Curve, Peak, Step, Random                                            | Ramp    | Velocity distribution across strummed notes          |
+| Vel Depth     | 0 – 100%                                                                   | 0       | Amount of velocity curve applied                     |
+| Vel Deviation | 0 – 100%                                                                   | 5       | Random velocity variation per note                   |
+| Time Shape    | Off, Ramp, Curve, Peak, Step, Random                                       | Off     | Strum timing distribution                            |
+| Time Depth    | 0 – 100%                                                                   | 0       | Amount of time curve applied                         |
+
+### Drift
+
+Probabilistic runtime chord substitution — the sequencer may replace degrees with harmonically related alternatives on a clock-synced interval.
+
+| Parameter      | Range                                    | Default | Description                                        |
+| -------------- | ---------------------------------------- | ------- | -------------------------------------------------- |
+| Drift          | 0 – 100%                                | 0       | Probability of substitution per eligible note      |
+| Drift Interval | Off, 4, 8, 16, 32, 64, 128              | Off     | Clock ticks between drift re-rolls (Off = disabled)|
+| Drift Style    | Neighbor, Functional, Orbit              | Neighbor| Substitution strategy                              |
+| Drift Scope    | Focused, Distributed                     | Focused | Whether drift targets one note or spreads across all|
+
+### Breath
+
+Cyclical inner-voice movement in degree space — voices shift up/down over time according to a selectable wave shape.
+
+| Parameter    | Range                                                                                                                                     | Default    | Description                                  |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------------------------- |
+| Breath       | 0 – 2                                                                                                                                    | 0          | Maximum degree displacement per voice        |
+| Breath Rate  | Off, 4, 8, 16, 32, 64, 128                                                                                                               | Off        | Clock ticks per full wave cycle (Off = disabled)|
+| Breath Shape | Triangle, Square, Ramp, Random, Pendulum, Walk, Pulse, Sigh, Bloom, Alternate, Converge, Return, Sentence, Period, Arc, Suspend, Drift, Tide | Triangle | Wave shape for voice movement                |
+| Breath Scope | All Inner, Rand Voice, Top Only, Contrary                                                                                                 | All Inner  | Which voices are affected                    |
 
 ### Randomize
 
@@ -158,15 +186,17 @@ You always hear what you play — notes pass through to the output whether Recor
 
 ## Transform Pipeline
 
-On each clock tick the sequencer copies the base chord and runs it through four transform stages:
+On each clock tick the sequencer copies the base chord and runs it through these transform stages:
 
 ```
-Base Chord → Pitch → Voicing → Normalize → Order → Render → MIDI Out
+Base Chord → Drift → Pitch → Voicing → Normalize → Order → Breath → Render → MIDI Out
 
+Drift:     Probabilistic degree substitution (clock-synced)
 Pitch:     Transpose → Reflect → Spread
 Voicing:   Inversion → Rotation
 Normalize: None / LowestTo0 / FirstTo0
 Order:     Reverse → Direction
+Breath:    Cyclical inner-voice degree displacement (clock-synced)
 ```
 
 ## Building from Source
