@@ -337,6 +337,8 @@ struct Chordshift_DTC {
     int8_t driftOffset[NUM_STEPS];   // per-step drift transpose (0 = no drift)
     uint16_t driftStepCounter;       // steps since last drift evaluation
     int8_t focusedDriftStep;         // current focus target (-1 = none)
+    uint8_t anchorMask;              // bitmask: bit i = step i is frozen (Anchor scope)
+    bool anchorInitialized;          // true once anchor mask has been generated
 
     // Global oct/inv random interval counters
     uint16_t octRandomCounter;

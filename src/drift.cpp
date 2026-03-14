@@ -6,9 +6,12 @@
  * is never modified; drift is a runtime-only degree-space transpose per step.
  *
  * Styles:
- * - Neighbor: offset ±1
+ * - Neighbor: offset ±1, biased toward zero
  * - Functional: members of same harmonic family (7-note scales only)
  * - Orbit: accumulates in one direction, ±1 per evaluation
+ * - Suspend: jumps to open intervals (4ths/5ths = ±3, ±4), biased toward zero
+ * - Wander: random walk ±1 with no return-to-zero bias, accumulates freely
+ * - Plateau: holds current offset, then jumps to random new offset
  */
 
 #include "drift.h"
@@ -143,6 +146,46 @@ static int generateOrbitCandidates(DriftCandidate* cands, int8_t current,
     return 1;
 }
 
+// Generate suspend candidates: current ±3 and ±4 (4ths/5ths), weighted toward zero
+static int generateSuspendCandidates(DriftCandidate* cands, int8_t current) {
+    int n = 0;
+    int8_t offsets[] = {-4, -3, 3, 4};
+
+    for (int i = 0; i < 4; i++) {
+        int8_t newOff = current + offsets[i];
+        int absOff = newOff < 0 ? -newOff : newOff;
+        cands[n].newOffset = newOff;
+        cands[n].weight = 10 - absOff;
+        if (cands[n].weight < 1) cands[n].weight = 1;
+        n++;
+    }
+
+    return n;
+}
+
+// Generate wander candidates: current ±1 with equal weights (no zero bias)
+static int generateWanderCandidates(DriftCandidate* cands, int8_t current) {
+    cands[0].newOffset = current - 1;
+    cands[0].weight = 1;
+    cands[1].newOffset = current + 1;
+    cands[1].weight = 1;
+    return 2;
+}
+
+// Generate plateau candidates: single candidate at random offset within ±(scaleLen-1)
+static int generatePlateauCandidates(DriftCandidate* cands, int8_t current,
+                                      int scaleLen, uint32_t& randState) {
+    int maxOff = scaleLen - 1;
+    if (maxOff < 1) maxOff = 1;
+    int8_t newOff;
+    do {
+        newOff = (int8_t)randRange(randState, -maxOff, maxOff);
+    } while (newOff == current);
+    cands[0].newOffset = newOff;
+    cands[0].weight = 1;
+    return 1;
+}
+
 // ============================================================================
 // WEIGHTED SELECTION
 // ============================================================================
@@ -188,34 +231,110 @@ void evaluateDrift(ChordshiftAlgorithm* alg) {
     int targetStep;
     int scope = v[kParamDriftScope];
 
-    if (scope == 0) {
-        // Focused: rotate through steps sequentially
-        dtc->focusedDriftStep++;
-        if (dtc->focusedDriftStep >= (int8_t)stepCount) {
-            dtc->focusedDriftStep = 0;
+    switch (scope) {
+        case 0:  // Focused: rotate through steps sequentially
+            dtc->focusedDriftStep++;
+            if (dtc->focusedDriftStep >= (int8_t)stepCount)
+                dtc->focusedDriftStep = 0;
+            targetStep = dtc->focusedDriftStep;
+            break;
+        case 1:  // Distributed: pick randomly
+            targetStep = randRange(alg->randState, 0, stepCount - 1);
+            break;
+        case 2:  // Unison: always evaluate step 0, broadcast after
+            targetStep = 0;
+            break;
+        case 3: {  // Anchor: random among non-frozen steps
+            if (!dtc->anchorInitialized) {
+                dtc->anchorMask = 0;
+                int toFreeze = stepCount / 2;
+                int frozen = 0;
+                while (frozen < toFreeze) {
+                    int idx = randRange(alg->randState, 0, stepCount - 1);
+                    if (!(dtc->anchorMask & (1 << idx))) {
+                        dtc->anchorMask |= (1 << idx);
+                        frozen++;
+                    }
+                }
+                dtc->anchorInitialized = true;
+            }
+            // Pick random non-frozen step
+            int candidates[NUM_STEPS];
+            int numCand = 0;
+            for (int i = 0; i < stepCount; i++) {
+                if (!(dtc->anchorMask & (1 << i)))
+                    candidates[numCand++] = i;
+            }
+            if (numCand == 0) return;  // all frozen
+            targetStep = candidates[randRange(alg->randState, 0, numCand - 1)];
+            break;
         }
-        targetStep = dtc->focusedDriftStep;
-    } else {
-        // Distributed: pick randomly
-        targetStep = randRange(alg->randState, 0, stepCount - 1);
+        case 4:  // Cascade: shift offsets down, then evaluate step 0
+            for (int i = stepCount - 1; i > 0; i--)
+                dtc->driftOffset[i] = dtc->driftOffset[i - 1];
+            targetStep = 0;
+            break;
+        case 5: {  // Spread: weighted random by proximity to current play step
+            int playStep = dtc->currentPlayStep;
+            int weights[NUM_STEPS];
+            int totalW = 0;
+            for (int i = 0; i < stepCount; i++) {
+                int dist = i - playStep;
+                if (dist < 0) dist = -dist;
+                if (dist > stepCount / 2) dist = stepCount - dist;
+                weights[i] = stepCount - dist;
+                totalW += weights[i];
+            }
+            int roll = randRange(alg->randState, 0, totalW - 1);
+            int accum = 0;
+            targetStep = 0;
+            for (int i = 0; i < stepCount; i++) {
+                accum += weights[i];
+                if (roll < accum) { targetStep = i; break; }
+            }
+            break;
+        }
+        default:
+            targetStep = randRange(alg->randState, 0, stepCount - 1);
+            break;
     }
 
     int8_t currentOffset = dtc->driftOffset[targetStep];
 
+    int style = v[kParamDriftStyle];
+
+    // Plateau: driftAmount% chance to stay at current offset, skip evaluation
+    if (style == 5 && currentOffset != 0) {
+        if ((int)(randFloat(alg->randState) * 100.0f) < driftAmount) {
+            return;  // Stay at current offset
+        }
+    }
+
+    // Wander: driftAmount% chance to step, otherwise stay
+    if (style == 4) {
+        if ((int)(randFloat(alg->randState) * 100.0f) >= driftAmount) {
+            return;  // Stay at current offset
+        }
+    }
+
     // Return-or-drift decision: if already drifted, chance to move back toward 0
-    if (currentOffset != 0) {
+    // Wander (4) and Plateau (5) skip return-to-zero
+    if (currentOffset != 0 && style <= 3) {
         int returnProb = 100 - driftAmount;
         if ((int)(randFloat(alg->randState) * 100.0f) < returnProb) {
             // Move one step toward zero
             if (currentOffset > 0) currentOffset--;
             else currentOffset++;
             dtc->driftOffset[targetStep] = currentOffset;
+            if (scope == 2) {
+                for (int i = 0; i < stepCount; i++)
+                    dtc->driftOffset[i] = dtc->driftOffset[targetStep];
+            }
             return;
         }
     }
 
     // Generate candidates by style
-    int style = v[kParamDriftStyle];
     int scaleType = v[kParamScaleType];
     ScaleData sd = getScaleData(scaleType);
 
@@ -232,6 +351,15 @@ void evaluateDrift(ChordshiftAlgorithm* alg) {
         case 2:  // Orbit
             numCands = generateOrbitCandidates(cands, currentOffset, alg->randState);
             break;
+        case 3:  // Suspend
+            numCands = generateSuspendCandidates(cands, currentOffset);
+            break;
+        case 4:  // Wander
+            numCands = generateWanderCandidates(cands, currentOffset);
+            break;
+        case 5:  // Plateau
+            numCands = generatePlateauCandidates(cands, currentOffset, sd.length, alg->randState);
+            break;
         default:
             numCands = generateNeighborCandidates(cands, currentOffset);
             break;
@@ -239,10 +367,10 @@ void evaluateDrift(ChordshiftAlgorithm* alg) {
 
     int8_t newOffset = weightedSelect(cands, numCands, alg->randState);
 
-    // Bound to ±scaleLen: Orbit resets to 0, others wrap
+    // Bound to ±scaleLen: Orbit/Wander reset to 0, others wrap
     int len = sd.length;
     if (newOffset > len || newOffset < -len) {
-        if (style == 2) {
+        if (style == 2 || style == 4) {
             newOffset = 0;
         } else {
             newOffset = newOffset + (newOffset > 0 ? -2 * len : 2 * len);
@@ -250,6 +378,10 @@ void evaluateDrift(ChordshiftAlgorithm* alg) {
     }
 
     dtc->driftOffset[targetStep] = newOffset;
+    if (scope == 2) {
+        for (int i = 0; i < stepCount; i++)
+            dtc->driftOffset[i] = dtc->driftOffset[targetStep];
+    }
 }
 
 void applyDrift(DegreeBuffer* buf, int8_t offset) {
@@ -265,4 +397,6 @@ void resetDrift(Chordshift_DTC* dtc) {
     }
     dtc->driftStepCounter = 0;
     dtc->focusedDriftStep = -1;
+    dtc->anchorMask = 0;
+    dtc->anchorInitialized = false;
 }

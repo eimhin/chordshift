@@ -116,8 +116,8 @@ Probabilistic runtime chord substitution — the sequencer may replace degrees w
 | -------------- | ---------------------------------------- | ------- | -------------------------------------------------- |
 | Drift          | 0 – 100%                                | 0       | Probability of substitution per eligible note      |
 | Drift Interval | Off, 4, 8, 16, 32, 64, 128              | Off     | Clock ticks between drift re-rolls (Off = disabled)|
-| Drift Style    | Neighbor, Functional, Orbit              | Neighbor| Substitution strategy                              |
-| Drift Scope    | Focused, Distributed                     | Focused | Whether drift targets one note or spreads across all|
+| Drift Style    | Neighbor, Functional, Orbit, Suspend, Wander, Plateau | Neighbor| Substitution strategy                    |
+| Drift Scope    | Focused, Distributed, Unison, Anchor, Cascade, Spread | Focused | How drift targets steps across the sequence|
 
 ### Breath
 
