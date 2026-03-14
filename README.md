@@ -49,7 +49,7 @@ The display shows a step grid (top) and a velocity/note visualization of the cur
 | --------- | ------------------ | ------- | -------------------------------------------------------------------- |
 | Root      | C – B              | C       | Scale root note                                                      |
 | Scale     | Ionian – Min Penta | Ionian  | Scale type (7 modes + Harmonic Min, Melodic Min, Maj/Min Pentatonic) |
-| Octave    | C1 – C7            | C3      | Base octave for degree-to-MIDI conversion                            |
+| Octave    | C1 – C7            | C3      | Base octave for output notes                                         |
 
 ### Record
 
@@ -74,7 +74,7 @@ The display shows a step grid (top) and a velocity/note visualization of the cur
 
 ### Pitch
 
-Global pitch transforms — combined additively with per-step values.
+Global pitch transforms — these add to any per-step values.
 
 | Parameter     | Range                         | Default | Description                                |
 | ------------- | ----------------------------- | ------- | ------------------------------------------ |
@@ -89,7 +89,7 @@ Global pitch transforms — combined additively with per-step values.
 | ------------ | ------------------------- | ------- | ---------------------------------------------------------------------------- |
 | Inversion    | -4 – +4                  | 0       | Move bottom/top notes across octaves                                         |
 | Rotation     | -7 – +7                  | 0       | Rotate the note order cyclically                                             |
-| Normalize    | None, Lowest=0, First=0  | None    | Re-center degrees after transforms                                           |
+| Normalize    | None, Lowest=0, First=0  | None    | Re-center the chord after transforms                                         |
 | Density      | 0 – 100%                 | 100     | Probability each note in the chord sounds                                    |
 | Oct Random   | -100 – +100%             | 0       | Random octave displacement per note (positive = up bias, negative = down)    |
 | Oct Rnd Intv | 0 – 32                   | 0       | Minimum clock ticks between octave random re-rolls (0 = every step)          |
@@ -112,7 +112,7 @@ Global pitch transforms — combined additively with per-step values.
 
 ### Drift
 
-Probabilistic runtime chord substitution — the sequencer may replace degrees with harmonically related alternatives on a clock-synced interval.
+Gradually evolving chord changes — the sequencer may swap notes for nearby scale tones on a clock-synced interval.
 
 | Parameter      | Range                                    | Default | Description                                        |
 | -------------- | ---------------------------------------- | ------- | -------------------------------------------------- |
@@ -123,7 +123,7 @@ Probabilistic runtime chord substitution — the sequencer may replace degrees w
 
 ### Breath
 
-Cyclical inner-voice movement in degree space — voices shift up/down over time according to a selectable wave shape.
+Slow, wave-shaped movement of inner voices — notes shift up and down over time according to a selectable shape.
 
 | Parameter    | Range                                                                                                                                     | Default    | Description                                  |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------------------------- |
@@ -134,7 +134,7 @@ Cyclical inner-voice movement in degree space — voices shift up/down over time
 
 ### Randomize
 
-Generate random step parameter variations with contour-shaped distribution.
+Generate a random sequence with shape-controlled variation across steps.
 
 | Parameter    | Range                                                    | Default | Description                                      |
 | ------------ | -------------------------------------------------------- | ------- | ------------------------------------------------ |
@@ -193,12 +193,12 @@ On each clock tick the sequencer copies the base chord and runs it through these
 ```
 Base Chord → Drift → Pitch → Voicing → Normalize → Order → Breath → Render → MIDI Out
 
-Drift:     Probabilistic degree substitution (clock-synced)
+Drift:     Random note substitution (clock-synced)
 Pitch:     Transpose → Reflect → Spread
 Voicing:   Inversion → Rotation
 Normalize: None / LowestTo0 / FirstTo0
 Order:     Reverse → Direction
-Breath:    Cyclical inner-voice degree displacement (clock-synced)
+Breath:    Slow inner-voice movement (clock-synced)
 ```
 
 ## Building from Source
