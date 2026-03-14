@@ -180,26 +180,24 @@ Each step has its own set of transforms that combine with the global values.
 
 ## How Capture Works
 
-1. **Build your chord**: With Record on, play and hold the notes you want. Each time you press a new key, the plugin updates the chord it's listening to.
-2. **Release to save**: When you lift all keys, the chord is saved to the current edit step.
-3. **Auto-advance**: The edit step moves forward automatically, wrapping back to step 1 after the last step.
-
-You always hear what you play — notes pass through to the output whether Record is on or off.
+With Record on, hold the notes you want and release — the chord is saved to the current edit step, which then auto-advances. Notes always pass through to the output.
 
 ## Transform Pipeline
 
-On each clock tick the sequencer copies the base chord and runs it through these transform stages:
+Each clock tick copies the base chord and runs it through:
 
 ```
 Base Chord → Drift → Pitch → Voicing → Normalize → Order → Breath → Render → MIDI Out
-
-Drift:     Random note substitution (clock-synced)
-Pitch:     Transpose → Reflect → Spread
-Voicing:   Inversion → Rotation
-Normalize: None / LowestTo0 / FirstTo0
-Order:     Reverse → Direction
-Breath:    Slow inner-voice movement (clock-synced)
 ```
+
+| Stage     | Detail                          |
+|-----------|---------------------------------|
+| Drift     | Random note substitution        |
+| Pitch     | Transpose → Reflect → Spread    |
+| Voicing   | Inversion → Rotation            |
+| Normalize | None / LowestTo0 / FirstTo0     |
+| Order     | Reverse → Direction             |
+| Breath    | Slow inner-voice movement       |
 
 ## Building from Source
 
