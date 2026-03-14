@@ -140,9 +140,6 @@ enum {
     kParamRandRepeat,
     kParamRandVoiceLead,
 
-    kParamExtDepth,
-    kParamExtColor,
-
     kParamDriftAmount,
     kParamDriftInterval,
     kParamDriftStyle,
@@ -153,7 +150,12 @@ enum {
     kParamInvRandom,
     kParamInvRandomInterval,
 
-    kGlobalParamCount  // = 61
+    kParamBreathAmount,
+    kParamBreathRate,
+    kParamBreathShape,
+    kParamBreathScope,
+
+    kGlobalParamCount  // = 63
 };
 
 // Per-step parameter offsets
@@ -339,6 +341,10 @@ struct Chordshift_DTC {
     // Global oct/inv random interval counters
     uint16_t octRandomCounter;
     uint16_t invRandomCounter;
+
+    // Breath state
+    uint16_t breathStepCounter;
+    int8_t breathWalkOffset;
 
     // UI frame counter for blink effects
     uint16_t drawFrameCount;

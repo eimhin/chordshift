@@ -232,9 +232,6 @@ void evaluateDrift(ChordshiftAlgorithm* alg) {
         case 2:  // Orbit
             numCands = generateOrbitCandidates(cands, currentOffset, alg->randState);
             break;
-        case 3:  // Color (same movement as Neighbor, applied differently in playback)
-            numCands = generateNeighborCandidates(cands, currentOffset);
-            break;
         default:
             numCands = generateNeighborCandidates(cands, currentOffset);
             break;
@@ -242,13 +239,11 @@ void evaluateDrift(ChordshiftAlgorithm* alg) {
 
     int8_t newOffset = weightedSelect(cands, numCands, alg->randState);
 
-    // Bound to ±scaleLen: Orbit resets to 0, Color clamps, others wrap
+    // Bound to ±scaleLen: Orbit resets to 0, others wrap
     int len = sd.length;
     if (newOffset > len || newOffset < -len) {
         if (style == 2) {
             newOffset = 0;
-        } else if (style == 3) {
-            newOffset = newOffset > 0 ? len : -len;
         } else {
             newOffset = newOffset + (newOffset > 0 ? -2 * len : 2 * len);
         }

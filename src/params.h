@@ -38,8 +38,15 @@ static const char* const seqDivStrings[] = {"None", "1", "2", "4", "8", "16", "3
 static const char* const seqHoldStrings[] = {"Varied", "Uniform", NULL};
 static const char* const randTemplateStrings[] = {"Off", "5th", "Triad", "7th", "5th+Tri", "5th+7th", "Tri+7th", "All", NULL};
 static const char* const driftIntervalStrings[] = {"Off", "4", "8", "16", "32", "64", "128", NULL};
-static const char* const driftStyleStrings[] = {"Neighbor", "Functional", "Orbit", "Color", NULL};
+static const char* const driftStyleStrings[] = {"Neighbor", "Functional", "Orbit", NULL};
 static const char* const driftScopeStrings[] = {"Focused", "Distributed", NULL};
+static const char* const breathRateStrings[] = {"Off", "4", "8", "16", "32", "64", "128", NULL};
+static const char* const breathShapeStrings[] = {"Triangle", "Square", "Ramp", "Random",
+                                                  "Pendulum", "Walk", "Pulse", "Sigh",
+                                                  "Bloom", "Alternate", "Converge", "Return",
+                                                  "Sentence", "Period", "Arc", "Suspend",
+                                                  "Drift", "Tide", NULL};
+static const char* const breathScopeStrings[] = {"All Inner", "Rand Voice", "Top Only", "Contrary", NULL};
 // ============================================================================
 // STEP PARAMETER MACRO
 // ============================================================================
@@ -150,21 +157,23 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
     {.name = "Repeat", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Voice Lead", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = offOnStrings},
 
-    // Extensions (51-52)
-    {.name = "Ext Depth", .min = 0, .max = 4, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
-    {.name = "Ext Color", .min = 0, .max = 100, .def = 50, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
-
-    // Drift (53-56)
+    // Drift
     {.name = "Drift", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Drift Interval", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftIntervalStrings},
-    {.name = "Drift Style", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftStyleStrings},
+    {.name = "Drift Style", .min = 0, .max = 2, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftStyleStrings},
     {.name = "Drift Scope", .min = 0, .max = 1, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftScopeStrings},
 
-    // Oct/Inv Random (57-60)
+    // Oct/Inv Random
     {.name = "Oct Random", .min = -100, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Oct Rnd Intv", .min = 0, .max = 32, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
     {.name = "Inv Random", .min = -100, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
     {.name = "Inv Rnd Intv", .min = 0, .max = 32, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
+
+    // Breath
+    {.name = "Breath", .min = 0, .max = 2, .def = 0, .unit = kNT_unitNone, .scaling = 0, .enumStrings = NULL},
+    {.name = "Breath Rate", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = breathRateStrings},
+    {.name = "Breath Shape", .min = 0, .max = 17, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = breathShapeStrings},
+    {.name = "Breath Scope", .min = 0, .max = 3, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = breathScopeStrings},
 
     // Per-step parameters
     STEP_PARAMS  // Step 1
@@ -202,15 +211,18 @@ static const uint8_t pagePlayback[] = {kParamPlayMode, kParamStepCount, kParamCl
 static const uint8_t pagePitch[] = {kParamTranspose, kParamReflectMode, kParamSpreadAmount, kParamSpreadAnchor};
 
 // Page 5: Voicing
-static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNormalize, kParamDirection, kParamReverse, kParamDensity, kParamExtDepth, kParamExtColor, kParamOctRandom, kParamOctRandomInterval, kParamInvRandom, kParamInvRandomInterval};
+static const uint8_t pageVoicing[] = {kParamInversion, kParamRotation, kParamNormalize, kParamDensity, kParamOctRandom, kParamOctRandomInterval, kParamInvRandom, kParamInvRandomInterval};
 
 // Page 6: Articulate
-static const uint8_t pageArticulate[] = {kParamHumanize, kParamStrumTime, kParamVelCurve, kParamVelDepth, kParamVelDeviation, kParamTimeCurve, kParamTimeDepth};
+static const uint8_t pageArticulate[] = {kParamHumanize, kParamStrumTime, kParamDirection, kParamReverse, kParamVelCurve, kParamVelDepth, kParamVelDeviation, kParamTimeCurve, kParamTimeDepth};
 
 // Page 7: Drift
 static const uint8_t pageDrift[] = {kParamDriftAmount, kParamDriftInterval, kParamDriftStyle, kParamDriftScope};
 
-// Page 8: Randomize
+// Page 8: Breath
+static const uint8_t pageBreath[] = {kParamBreathAmount, kParamBreathRate, kParamBreathShape, kParamBreathScope};
+
+// Page 9: Randomize
 static const uint8_t pageRandomize[] = {
     kParamRandomize, kParamRandomContour, kParamRandVoiceLead,
     kParamRandSeqLen, kParamRandSeqDiv, kParamRandSeqHold,
@@ -238,10 +250,11 @@ static const GlobalPageInfo globalPages[] = {
     {"Voicing",    pageVoicing,    ARRAY_SIZE(pageVoicing)},
     {"Articulate", pageArticulate, ARRAY_SIZE(pageArticulate)},
     {"Drift",      pageDrift,      ARRAY_SIZE(pageDrift)},
+    {"Breath",     pageBreath,     ARRAY_SIZE(pageBreath)},
     {"Randomize",  pageRandomize,  ARRAY_SIZE(pageRandomize)},
 };
 
-static constexpr int NUM_GLOBAL_PAGES = 9;
+static constexpr int NUM_GLOBAL_PAGES = 10;
 static_assert(sizeof(globalPages) / sizeof(globalPages[0]) == NUM_GLOBAL_PAGES,
               "globalPages[] size must match NUM_GLOBAL_PAGES");
 

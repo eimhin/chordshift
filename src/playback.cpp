@@ -10,11 +10,11 @@
  */
 
 #include "playback.h"
+#include "breath.h"
 #include "drift.h"
 #include "math.h"
 #include "midi.h"
 #include "random.h"
-#include "extensions.h"
 #include "render.h"
 #include "transforms.h"
 
@@ -112,6 +112,7 @@ void handleTransportStart(ChordshiftAlgorithm* alg) {
     dtc->msAccum = 0.0f;
     dtc->transportState = TRANSPORT_RUNNING;
     resetDrift(dtc);
+    resetBreath(dtc);
 }
 
 void handleTransportStop(ChordshiftAlgorithm* alg) {
@@ -130,6 +131,7 @@ void handleTransportStop(ChordshiftAlgorithm* alg) {
     dtc->invRandomCounter = 0;
     dtc->stepTime = 0.0f;
     resetDrift(dtc);
+    resetBreath(dtc);
 }
 
 // ============================================================================
@@ -205,19 +207,14 @@ void processClockTick(ChordshiftAlgorithm* alg) {
             buf.degrees[i] = ss->baseChord.degrees[i];
     }
 
-    // Apply drift and extensions
-    int driftStyle = v[kParamDriftStyle];
-    if (driftStyle == 3 && v[kParamDriftInterval] > 0 && v[kParamDriftAmount] > 0) {
-        // Color drift: offset controls extension color instead of transposing
-        int color = clamp(50 + dtc->driftOffset[nextStep] * DRIFT_COLOR_SCALE, 0, 100);
-        applyExtensions(&buf, v, 4, color);
-    } else {
-        applyDrift(&buf, dtc->driftOffset[nextStep]);
-        applyExtensions(&buf, v);
-    }
+    // Apply drift
+    applyDrift(&buf, dtc->driftOffset[nextStep]);
 
     // Apply transform pipeline
     applyTransforms(&buf, v, nextStep, alg->randState, dtc);
+
+    // Apply voice breathing (after transforms, before render)
+    applyBreathing(&buf, v, dtc, alg->randState);
 
     // Increment global random interval counters (after read, so counter=0 fires on first step)
     dtc->octRandomCounter++;

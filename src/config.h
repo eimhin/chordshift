@@ -31,7 +31,7 @@ static constexpr int MAX_DELAYED_NOTES = 64;   // Strum delay buffer size
 // ============================================================================
 
 static constexpr int PARAMS_PER_STEP = 18;     // Parameters per step
-static constexpr int GLOBAL_PARAMS = 61;       // Global parameters
+static constexpr int GLOBAL_PARAMS = 63;       // Global parameters
 
 // Derived constants
 static constexpr int MAX_TOTAL_PARAMS = GLOBAL_PARAMS + (PARAMS_PER_STEP * NUM_STEPS);
@@ -40,9 +40,6 @@ static constexpr int MAX_PAGES = 10 + NUM_STEPS; // 10 global pages + step pages
 // ============================================================================
 // COMPILE-TIME VALIDATION
 // ============================================================================
-
-// Color drift: maps offset to extension color threshold (50 + offset * DRIFT_COLOR_SCALE)
-static constexpr int DRIFT_COLOR_SCALE = 10;
 
 static_assert(MAX_TOTAL_PARAMS <= 242, "Max parameter index exceeds distingNT API limit of 242");
 static_assert(MAX_CHORD_NOTES <= 127, "MAX_CHORD_NOTES must fit in int8_t array");

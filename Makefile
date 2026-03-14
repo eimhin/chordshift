@@ -11,8 +11,8 @@ SOURCES = chordshift.cpp \
           src/serial.cpp \
           src/scales.cpp \
           src/randomize.cpp \
-          src/extensions.cpp \
-          src/drift.cpp
+          src/drift.cpp \
+          src/breath.cpp
 
 CXX = arm-none-eabi-g++
 CFLAGS = -std=c++11 \

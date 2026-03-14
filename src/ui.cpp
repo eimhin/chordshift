@@ -7,7 +7,6 @@
  */
 
 #include "ui.h"
-#include "extensions.h"
 #include "math.h"
 #include "scales.h"
 #include "transforms.h"
@@ -132,7 +131,6 @@ static void drawStepGrid(ChordshiftAlgorithm* alg) {
         }
 
         if (buf.count > 0) {
-            applyExtensions(&buf, v);
             applyPitchTransforms(&buf, v, s);
 
             // Show transpose offset (lower right)
