@@ -37,7 +37,6 @@ static const char* const seqLenStrings[] = {"None", "8", "16", "32", "64", "128"
 static const char* const seqDivStrings[] = {"None", "1", "2", "4", "8", "16", "32", NULL};
 static const char* const seqHoldStrings[] = {"Varied", "Uniform", NULL};
 static const char* const randTemplateStrings[] = {"Off", "5th", "Triad", "7th", "5th+Tri", "5th+7th", "Tri+7th", "All", NULL};
-static const char* const driftIntervalStrings[] = {"Off", "4", "8", "16", "32", "64", "128", NULL};
 static const char* const driftStyleStrings[] = {"Neighbor", "Functional", "Orbit", "Suspend", "Wander", "Plateau", NULL};
 static const char* const driftScopeStrings[] = {"Focused", "Distributed", "Unison", "Anchor", "Cascade", "Spread", NULL};
 static const char* const breathShapeStrings[] = {"Triangle", "Square", "Ramp", "Random",
@@ -158,7 +157,7 @@ static const _NT_parameter parameters[MAX_TOTAL_PARAMS] = {
 
     // Drift
     {.name = "Drift", .min = 0, .max = 100, .def = 0, .unit = kNT_unitPercent, .scaling = 0, .enumStrings = NULL},
-    {.name = "Drift Interval", .min = 0, .max = 6, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftIntervalStrings},
+    {.name = "Drift Interval", .min = 0, .max = 64, .def = 0, .unit = kNT_unitNone},
     {.name = "Drift Style", .min = 0, .max = 5, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftStyleStrings},
     {.name = "Drift Scope", .min = 0, .max = 5, .def = 0, .unit = kNT_unitEnum, .scaling = 0, .enumStrings = driftScopeStrings},
 

@@ -23,13 +23,6 @@
 // INTERVAL CONVERSION
 // ============================================================================
 
-// Convert drift interval enum (0=Off, 1=4, 2=8, 3=16, 4=32, 5=64, 6=128)
-// to step count. Returns 0 for Off.
-static int getDriftIntervalSteps(int enumVal) {
-    static const int table[] = {0, 4, 8, 16, 32, 64, 128};
-    if (enumVal < 0 || enumVal > 6) return 0;
-    return table[enumVal];
-}
 
 // ============================================================================
 // HARMONIC FAMILY TABLES (for Functional style)
@@ -215,9 +208,8 @@ void evaluateDrift(ChordshiftAlgorithm* alg) {
     Chordshift_DTC* dtc = alg->dtc;
     const int16_t* v = alg->v;
 
-    int intervalEnum = v[kParamDriftInterval];
-    int intervalSteps = getDriftIntervalSteps(intervalEnum);
-    if (intervalSteps == 0) return;  // Drift off
+    int intervalSteps = v[kParamDriftInterval];
+    if (intervalSteps <= 0) return;  // Drift off
 
     int driftAmount = v[kParamDriftAmount];
     if (driftAmount <= 0) return;
