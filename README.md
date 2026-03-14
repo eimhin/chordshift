@@ -2,6 +2,8 @@
 
 A diatonic transform chord sequencer for the [Expert Sleepers disting NT](https://expert-sleepers.co.uk/distingNT.html).
 
+![Chordshift](chordshift.png)
+
 Record chords from a MIDI keyboard or select from built-in templates, then play them back as a sequence with a rich transform pipeline — transposition, inversion, rotation, spread, strumming, and more. All pitch logic operates in scale-degree space, so chords are always in-key and respond instantly when you change root or scale.
 
 ## Installation
